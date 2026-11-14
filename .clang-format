@@ -1,0 +1,33 @@
+# Formatting is checked in CI with clang-format 23 (see CONTRIBUTING.md).
+# Run `make format` before committing.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 100
+UseTab: Never
+
+# K&R with the function brace on its own line (Linux kernel style).
+BreakBeforeBraces: Linux
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortEnumsOnASingleLine: false
+InsertBraces: true
+
+PointerAlignment: Right
+IndentCaseLabels: false
+SpaceAfterCStyleCast: false
+AlignEscapedNewlines: Right
+AlignTrailingComments: true
+AlwaysBreakBeforeMultilineStrings: false
+BinPackArguments: true
+BinPackParameters: BinPack
+PenaltyReturnTypeOnItsOwnLine: 1000
+
+# Own header first, then project headers, then system headers; each group
+# sorted, groups left as written.
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
+...

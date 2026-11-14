@@ -1,0 +1,43 @@
+# Build trees
+/build/
+/build-*/
+/out/
+/cmake-build-*/
+CMakeUserPresets.json
+compile_commands.json
+
+# Report build products (the PDF is published by CI, not committed)
+/docs/report/build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Generated documentation
+/docs/api/
+
+# Coverage and analysis
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+/coverage/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local-only material: the 2023 hand-in and the course files (see README, "History")
+/archive/

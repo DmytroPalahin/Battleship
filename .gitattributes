@@ -1,2 +1,18 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Text files are stored with LF and checked out with the platform's convention.
+* text=auto eol=lf
+
+*.c    text diff=cpp
+*.h    text diff=cpp
+*.tex  text diff=tex
+*.md   text diff=markdown
+*.css  text diff=css
+
+# Binary assets: never touch, never diff.
+*.png  binary
+*.jpg  binary
+*.wav  binary
+*.pdf  binary
+
+# Keep GitHub's language statistics about the program, not the report.
+docs/** linguist-documentation
+*.tex linguist-documentation
