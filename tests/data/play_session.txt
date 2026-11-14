@@ -1,0 +1,9 @@
+help
+shuffle
+hint
+A1
+a1
+z99
+shuffle
+J10
+quit
