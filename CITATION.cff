@@ -14,7 +14,7 @@ authors:
 repository-code: "https://github.com/DmytroPalahin/battleship"
 url: "https://github.com/DmytroPalahin/battleship"
 license: MIT
-version: 2.1.0
+version: 2.1.1
 date-released: "2026-11-14"
 keywords:
   - battleship

@@ -27,6 +27,11 @@
   </developer>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="2.1.1" date="2026-11-14">
+      <description>
+        <p>Sound effects no longer fail when shots follow each other quickly.</p>
+      </description>
+    </release>
     <release version="2.1.0" date="2026-11-14">
       <description>
         <p>All artwork and sounds are now original and under the MIT licence.</p>

@@ -7,12 +7,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
-
-- The repository is now `DmytroPalahin/battleship`, in lower case like the programs and
-  packages it builds. Links in the documentation, the report and the package metadata follow;
-  addresses written with the former capital letter still resolve.
-- Sound effects overlap instead of cutting each other short; at most four sound at once.
+## [2.1.1] - 2026-11-14
 
 ### Fixed
 
@@ -20,8 +15,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   GStreamer pipeline whose threads were still running occasionally ended in an "Internal data
   stream error", which silenced that sound for the rest of the session and made the end-to-end
   GUI test fail (4 times in 240 stressed runs). Every occurrence of a sound now plays on a
-  short-lived pipeline of its own that is never restarted.
+  short-lived pipeline of its own that is never restarted; occurrences overlap instead of
+  cutting each other short, four at most.
 - A sound that cannot be played is reported with the name of the failing GStreamer element.
+
+### Changed
+
+- The repository is now `DmytroPalahin/battleship`, in lower case like the programs and
+  packages it builds. Links in the documentation, the report and the package metadata follow;
+  addresses written with the former capital letter still resolve.
 
 ## [2.1.0] - 2026-11-14
 
@@ -130,7 +132,8 @@ The original university project, by Dmytro Palahin and Ivanna Makam
 - Rules and trailer windows.
 - A variant with sound effects through GStreamer.
 
-[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/DmytroPalahin/battleship/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/DmytroPalahin/battleship/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/DmytroPalahin/battleship/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/DmytroPalahin/battleship/releases/tag/v1.0.0
