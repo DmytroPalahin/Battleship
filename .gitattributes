@@ -6,6 +6,7 @@
 *.tex  text diff=tex
 *.md   text diff=markdown
 *.css  text diff=css
+*.sh   text eol=lf
 
 # Binary assets: never touch, never diff.
 *.png  binary

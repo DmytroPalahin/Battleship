@@ -22,6 +22,7 @@ Useful extras, all optional:
 | `gcovr`                     | `make coverage`            |
 | TeX Live with `latexmk`     | `make report`              |
 | Doxygen                     | `make docs`                |
+| ImageMagick, ffmpeg, pngquant | `make assets`            |
 
 ## Before you open a pull request
 
@@ -64,6 +65,8 @@ having, and its outcome is recorded as a [decision record](docs/adr).
 - Comments explain *why*. The public headers are the reference documentation: every
   declaration has a comment stating its contract.
 - User-visible text goes in `src/ui/texts.h`, never in widget code.
+- Images and sounds are generated: change `tools/generate-assets.sh`, not the files in
+  `assets/`. Only original material is accepted; nothing downloaded.
 
 ## Commits
 

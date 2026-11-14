@@ -23,4 +23,4 @@ CSS backgrounds selected by class.
 - The program is a single file that runs from anywhere and installs trivially.
 - No "file not found" at run time: a missing asset is a build error.
 - Changing a picture requires a rebuild. Acceptable for a game of this size.
-- The executable grows by the size of the assets: the release build weighs about 1 MB.
+- The executable grows by the size of the assets: the release build weighs about 0.5 MB.

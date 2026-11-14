@@ -69,7 +69,7 @@ window.info-trailer {
   color: #111111;
   font-size: 20px;
   font-weight: 900;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
 }
 
 .score {

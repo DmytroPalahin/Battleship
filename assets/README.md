@@ -4,31 +4,39 @@ Everything in this directory is compiled into the executable as a
 [GResource](https://docs.gtk.org/gio/struct.Resource.html) bundle
 (see [`src/ui/CMakeLists.txt`](../src/ui/CMakeLists.txt)), so the game runs from any directory.
 
-| File                               | Used for                                   | Origin               |
-| ---------------------------------- | ------------------------------------------ | -------------------- |
-| `style.css`                        | Appearance of every widget                 | This project (MIT)   |
-| `images/background-menu.jpg`       | Menu page                                  | This project (MIT)   |
-| `images/flag.png`, `miss.png`      | "No ship here" and "missed" markers        | This project (MIT)   |
-| `images/background-game.jpg`       | Game page                                  | Third party          |
-| `images/background-rules.jpg`      | Rules window                               | Third party          |
-| `images/background-trailer.jpg`    | Trailer window                             | Third party          |
-| `images/versus.png`                | Illustration between the boards            | Third party, collage |
-| `images/ship*.png`, `rocket.png`   | Ship decks, keyboard cursor                | Third party          |
-| `images/explosion.png`             | Hit marker                                 | Third party          |
-| `sounds/hit.wav`, `sounds/miss.wav`| Sound effects (builds with GStreamer only) | Third party          |
+| File                              | Used for                                   |
+| --------------------------------- | ------------------------------------------ |
+| `style.css`                       | Appearance of every widget                 |
+| `images/background-menu.jpg`      | Menu page: the horizon                     |
+| `images/background-game.jpg`      | Game page: a sea chart                     |
+| `images/background-rules.jpg`     | Rules window: squared notebook paper       |
+| `images/background-trailer.jpg`   | Trailer window: a pale sky over a swell    |
+| `images/versus.png`               | Illustration between the two boards        |
+| `images/ship.png`                 | An intact deck                             |
+| `images/ship-sunk-player.png`     | A deck of a sunk ship of the player        |
+| `images/ship-sunk-enemy.png`      | A deck of a sunk pirate ship               |
+| `images/explosion.png`            | A hit                                      |
+| `images/miss.png`, `flag.png`     | A shot in the water; "no ship can be here" |
+| `images/rocket.png`               | Keyboard cursor                            |
+| `sounds/hit.wav`, `sounds/miss.wav` | Sound effects (builds with GStreamer only) |
 
-## Licence notice
+## Where they come from
 
-The MIT licence of this repository covers the source code and the files marked
-"This project". It does **not** cover the third-party artwork and sounds.
+Every image and sound is **original work of this project**, under the same
+[MIT licence](../LICENSE) as the code. None is downloaded, traced or sampled from an existing
+picture or recording: the images are drawn with ImageMagick primitives and the sounds are
+synthesised with ffmpeg, by one script.
 
-Those files were gathered in 2023 for a non-commercial school project and their
-individual sources were not recorded. They remain the property of their
-respective owners and are kept here for educational, non-commercial use only.
-The *Sup Galilée* name and logo belong to Institut Galilée, Université Sorbonne
-Paris Nord.
+```bash
+make assets          # runs tools/generate-assets.sh
+```
 
-If you own one of these files and want it credited or removed, please open an
-issue. If you want to redistribute the game, replace them first: the code only
-refers to them through the class names of `style.css` and the resource list of
-`src/ui/battleship.gresource.xml.in`.
+Random textures use fixed seeds, so with a given version of ImageMagick the script reproduces
+the same files. Change a colour or a shape in the script, run it, rebuild.
+
+## History
+
+Until version 2.0.0 the game used artwork and sounds gathered in 2023 for the original school
+project, whose sources had not been recorded. Version 2.1.0 replaced all of them. They remain
+visible in the Git history, in the files attached to the `v1.0.0` and `v2.0.0` releases and in
+the screenshots of the 2023 version kept under `docs/screenshots/v1/`.

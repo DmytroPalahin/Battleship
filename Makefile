@@ -10,7 +10,7 @@ SOURCES  = $(shell git ls-files '*.c' '*.h')
 
 .DEFAULT_GOAL := help
 .PHONY: help configure build test run play simulate format format-check lint asan coverage \
-        report docs package clean
+        report docs assets package clean
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' \
@@ -62,6 +62,9 @@ report: ## Build the LaTeX report (docs/report/build/battleship-report.pdf)
 docs: ## Generate the API reference with Doxygen (docs/api/)
 	cmake --preset $(PRESET) -DBATTLESHIP_BUILD_DOCS=ON
 	cmake --build --preset $(PRESET) --target docs
+
+assets: ## Redraw the images and re-synthesise the sounds (needs ImageMagick, ffmpeg, pngquant)
+	tools/generate-assets.sh assets
 
 package: ## Build the release archives (.tar.gz, and .deb on Linux)
 	$(MAKE) build PRESET=release

@@ -95,7 +95,8 @@ AddressSanitizer, le deuxième par le test qui exige qu'un bateau touché soit p
 La refonte ne devait pas changer le jeu. Ont été gardés : les règles et la composition des
 flottes ; les trois niveaux et leurs noms ; les écrans de règles et de présentation, avec
 leurs textes ; l'identité visuelle --- la marine de Sup Galilée contre les pirates, les
-images des bateaux, des explosions et du missile ; les messages de victoire et de défaite.
+bateaux, les explosions et le missile, redessinés depuis ; les messages de victoire et de
+défaite.
 
 Quelques ajouts profitent directement au joueur : les coordonnées autour des grilles, le
 score en direct, le dévoilement de la flotte adverse en fin de partie, la possibilité de
@@ -110,10 +111,12 @@ rejouer sans relancer le programme, et un ordinateur dont on voit tomber chaque 
         pour un gain que le \cref{tab-candidats} laisse supposer faible.
   \item \textbf{Le placement manuel n'existe pas.} Comme dans la version~1, le joueur
         retire sa flotte au hasard jusqu'à satisfaction.
-  \item \textbf{Les images et les sons sont en partie d'origine tierce.} Ils avaient été
-        réunis pour un projet scolaire sans que leurs sources soient notées. Le dépôt le
-        signale, les exclut de la licence du code, et l'image d'accueil a été remplacée par
-        un fond généré ; une diffusion plus large demanderait de les remplacer tous.
+  \item \textbf{Les images et les sons d'origine ont dû être refaits.} Ceux de 2023 avaient
+        été réunis sans que leurs sources soient notées, ce qui interdisait de diffuser le
+        jeu. La version~2.0 les signalait ; depuis la version~2.1, toutes les images sont
+        dessinées et tous les sons synthétisés par un script du dépôt
+        (\fichier{tools/generate-assets.sh}), sous la même licence que le code. Les captures
+        de l'annexe~\ref{chap-captures} montrent ces nouvelles ressources.
   \item \textbf{Le son n'est vérifié qu'en partie.} En intégration continue, le test de bout
         en bout décode réellement les deux effets sonores, mais vers une sortie factice :
         aucune machine de test n'a de carte son. La restitution elle-même reste à
