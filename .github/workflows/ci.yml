@@ -1,0 +1,209 @@
+# Continuous integration: everything that must hold before a change is merged.
+#
+# Every job runs the same CMake presets a developer runs locally
+# (CMakePresets.json), so a failure here is reproduced with one command.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes the running pipeline pointless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: jobs only read the repository.
+permissions:
+  contents: read
+
+env:
+  CTEST_PARALLEL_LEVEL: "4"
+  LINUX_PACKAGES: >-
+    libgtk-3-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+    xvfb xauth fonts-noto-color-emoji
+
+jobs:
+  # ---------------------------------------------------------------- format ---
+  format:
+    name: format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install clang-format
+        # Same version as the one named in CONTRIBUTING.md, so results match.
+        run: pipx install clang-format==23.1.5
+      - name: Check formatting
+        run: |
+          clang-format --version
+          git ls-files '*.c' '*.h' | xargs clang-format --dry-run --Werror
+
+  # ----------------------------------------------------------------- build ---
+  build:
+    name: build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "Ubuntu, GCC, Debug", os: ubuntu-24.04, cc: gcc, preset: dev }
+          - { name: "Ubuntu, GCC, Release", os: ubuntu-24.04, cc: gcc, preset: release }
+          - { name: "Ubuntu, Clang, Debug", os: ubuntu-24.04, cc: clang, preset: dev }
+          - { name: "Ubuntu, Clang, Release", os: ubuntu-24.04, cc: clang, preset: release }
+          - { name: "macOS, Apple Clang, Release", os: macos-15, cc: clang, preset: release }
+    env:
+      CC: ${{ matrix.cc }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y $LINUX_PACKAGES
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gtk+3 pkg-config
+
+      - name: Configure
+        # The end-to-end GUI test needs a display: enabled where Xvfb provides one.
+        run: >-
+          cmake --preset ${{ matrix.preset }}
+          -DBATTLESHIP_GUI_SMOKE_TEST=${{ runner.os == 'Linux' && 'ON' || 'OFF' }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} --parallel
+
+      - name: Test (Linux, with a virtual display)
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum ctest --preset ${{ matrix.preset }}
+
+      - name: Test (macOS)
+        if: runner.os == 'macOS'
+        run: ctest --preset ${{ matrix.preset }}
+
+      - name: Keep the screenshot of the end-to-end test
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gui-screenshot-${{ matrix.cc }}-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/tests/gui_smoke.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  # -------------------------------------------------------------- headless ---
+  # Proof that the engine does not depend on its interface: a bare Debian
+  # container without GTK, which also provides the oldest supported CMake.
+  headless:
+    name: headless (Debian 12, no GTK)
+    runs-on: ubuntu-24.04
+    container: debian:bookworm-slim
+    steps:
+      - name: Install the toolchain
+        run: |
+          apt-get update
+          apt-get install --no-install-recommends -y build-essential cmake git ca-certificates
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check that GTK is absent
+        run: |
+          if [ -e /usr/include/gtk-3.0 ]; then
+            echo "GTK headers found: this job would prove nothing." >&2
+            exit 1
+          fi
+          cmake --version
+      - name: Configure, build and test
+        run: |
+          cmake --preset headless
+          cmake --build --preset headless --parallel
+          ctest --preset headless
+
+  # ------------------------------------------------------------ sanitizers ---
+  sanitizers:
+    name: sanitizers (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y $LINUX_PACKAGES
+      - name: Configure, build and test
+        run: |
+          cmake --preset asan -DBATTLESHIP_GUI_SMOKE_TEST=ON
+          cmake --build --preset asan --parallel
+          xvfb-run --auto-servernum ctest --preset asan
+
+  # -------------------------------------------------------------- coverage ---
+  coverage:
+    name: coverage (engine >= 95 %)
+    runs-on: ubuntu-24.04
+    env:
+      CC: gcc
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install gcovr
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y gcovr
+      - name: Configure, build and test
+        run: |
+          cmake --preset coverage
+          cmake --build --preset coverage --parallel
+          ctest --preset coverage
+      - name: Measure and enforce the threshold
+        run: |
+          mkdir -p coverage
+          gcovr --root . --filter src/core --filter include build/coverage \
+            --txt coverage/summary.txt --html-details coverage/index.html \
+            --print-summary --fail-under-line 95
+      - name: Publish the summary
+        if: always()
+        run: |
+          {
+            echo '### Engine coverage'
+            echo '```'
+            cat coverage/summary.txt 2>/dev/null || echo 'no report produced'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep the detailed report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ------------------------------------------------------------------ lint ---
+  lint:
+    name: lint (clang-tidy, cppcheck)
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y $LINUX_PACKAGES clang-tidy cppcheck
+      - name: Configure and build
+        # Building first generates the files the analysers need to see.
+        run: |
+          cmake --preset dev
+          cmake --build --preset dev --parallel
+      - name: clang-tidy
+        run: |
+          clang-tidy --version
+          git ls-files 'src/*.c' | xargs clang-tidy -p build/dev --quiet
+      - name: cppcheck
+        # Runs even when clang-tidy found something: one run reports both.
+        if: success() || failure()
+        run: |
+          cppcheck --version
+          cppcheck --std=c11 --enable=warning,performance,portability --inline-suppr \
+            --error-exitcode=1 --quiet -I include -I build/dev/generated src/core src/cli

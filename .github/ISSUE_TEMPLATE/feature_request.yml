@@ -1,0 +1,28 @@
+name: Feature request
+description: An idea to make the game better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to be able to do?
+      description: Describe the need rather than the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How could it work?
+      description: Optional. A sketch of the behaviour, the interface or the API.
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Where would it live?
+      description: See docs/architecture.md if unsure.
+      options:
+        - Game engine (rules, AI)
+        - GTK interface
+        - Terminal interface
+        - Build, CI, packaging
+        - Documentation
+        - Not sure

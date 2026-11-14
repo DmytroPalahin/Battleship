@@ -1,0 +1,61 @@
+# Documentation: the project report (LaTeX) and the API reference (Doxygen).
+# Both are kept as build artefacts; releases attach the report (release.yml).
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "include/**"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "include/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: report (LaTeX)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Compile the report
+        # Options, output directory and file name come from docs/report/.latexmkrc.
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
+        with:
+          working_directory: docs/report
+          root_file: main.tex
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: battleship-report
+          path: docs/report/build/battleship-report.pdf
+          if-no-files-found: error
+
+  api:
+    name: API reference (Doxygen)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y doxygen
+      - name: Generate
+        run: |
+          cmake --preset headless -DBATTLESHIP_BUILD_DOCS=ON
+          cmake --build --preset headless --target docs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-reference
+          path: docs/api/html
+          if-no-files-found: error

@@ -1,0 +1,49 @@
+name: Bug report
+description: Something does not behave as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: seed
+    attributes:
+      label: Seed and level
+      description: >-
+        A seed and a level reproduce a game exactly. Start the game with `--seed N --level L`
+        if you can reproduce the problem that way.
+      placeholder: "--seed 7 --level hard"
+  - type: dropdown
+    id: frontend
+    attributes:
+      label: Which program?
+      options:
+        - battleship (GTK)
+        - battleship-cli play
+        - battleship-cli simulate
+        - Build or tests
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `battleship --version`, or the commit.
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: System
+      description: Operating system, compiler and GTK version.
+      placeholder: "Ubuntu 24.04, GCC 13.2, GTK 3.24.41"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Terminal output, if any. It is formatted as code automatically.
+      render: text

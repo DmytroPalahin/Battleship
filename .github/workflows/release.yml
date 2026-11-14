@@ -1,0 +1,95 @@
+# Continuous delivery: pushing a tag vX.Y.Z builds, tests, packages and
+# publishes that version.
+#
+#   1. the tag must match the version declared in CMakeLists.txt;
+#   2. the release build must pass the whole test-suite, GUI included;
+#   3. packages are produced by CPack, with SHA-256 checksums;
+#   4. a signed build-provenance attestation links each file to this run;
+#   5. the notes are the section of CHANGELOG.md for that version.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: build and publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # create the release
+      id-token: write # sign the attestation
+      attestations: write # store the attestation
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check that the tag matches the sources
+        run: |
+          declared=$(sed -nE 's/^ *VERSION ([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' CMakeLists.txt | head -n 1)
+          if [ "v$declared" != "$VERSION" ]; then
+            echo "Tag $VERSION does not match CMakeLists.txt (v$declared)." >&2
+            exit 1
+          fi
+          if ! grep -q "^## \[$declared\]" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section for $declared." >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            libgtk-3-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+            xvfb xauth fonts-noto-color-emoji
+
+      - name: Build and test
+        run: |
+          cmake --preset release -DBATTLESHIP_GUI_SMOKE_TEST=ON
+          cmake --build --preset release --parallel
+          xvfb-run --auto-servernum ctest --preset release
+
+      - name: Package
+        run: |
+          (cd build/release && cpack)
+          mkdir dist
+          cp build/release/battleship-*.tar.gz build/release/battleship*.deb dist/
+
+      - name: Compile the report
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
+        with:
+          working_directory: docs/report
+          root_file: main.tex
+
+      - name: Collect the files and their checksums
+        run: |
+          cp docs/report/build/battleship-report.pdf dist/
+          (cd dist && sha256sum -- * > SHA256SUMS)
+          ls -l dist
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
+
+      - name: Extract the release notes
+        run: |
+          awk -v version="${VERSION#v}" '
+            $0 ~ "^## \\[" version "\\]" { printing = 1; next }
+            printing && /^## \[/        { exit }
+            printing                     { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$VERSION" dist/*
+          --title "Battleship ${VERSION#v}"
+          --notes-file notes.md
+          --verify-tag
