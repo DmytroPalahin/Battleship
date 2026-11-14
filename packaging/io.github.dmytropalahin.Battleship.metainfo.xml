@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.dmytropalahin.Battleship</id>
+  <name>Battleship</name>
+  <name xml:lang="fr">Bataille Navale</name>
+  <summary>Sink the pirate fleet before it sinks yours</summary>
+  <summary xml:lang="fr">Coulez la flotte pirate avant qu'elle ne coule la vôtre</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      The classic pen-and-paper game against the computer, on a 10 by 10 grid with a fleet of
+      ten ships that may not touch each other.
+    </p>
+    <ul>
+      <li>Three levels, from a random gunner to one that reasons on probabilities</li>
+      <li>Random fleet placement, redrawn as often as you like before the first shot</li>
+      <li>Keyboard and mouse play, optional sound effects</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.dmytropalahin.Battleship.desktop</launchable>
+  <url type="homepage">https://github.com/DmytroPalahin/Battleship</url>
+  <url type="bugtracker">https://github.com/DmytroPalahin/Battleship/issues</url>
+  <url type="vcs-browser">https://github.com/DmytroPalahin/Battleship</url>
+  <developer id="io.github.dmytropalahin">
+    <name>Dmytro Palahin</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="2.0.0" date="2026-11-14">
+      <description>
+        <p>Complete rewrite: MVC architecture, tested game engine, new computer opponent.</p>
+      </description>
+    </release>
+    <release version="1.0.0" date="2023-06-20">
+      <description>
+        <p>Original university project.</p>
+      </description>
+    </release>
+  </releases>
+</component>

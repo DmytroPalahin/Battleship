@@ -11,6 +11,7 @@ project(
 option(BATTLESHIP_BUILD_GUI "Build the GTK 3 application" ON)
 option(BATTLESHIP_BUILD_CLI "Build the terminal front-end and simulator" ON)
 option(BATTLESHIP_BUILD_TESTS "Build the test-suite" ON)
+option(BATTLESHIP_BUILD_DOCS "Add a 'docs' target (requires Doxygen)" OFF)
 option(BATTLESHIP_GUI_SMOKE_TEST "Register the GUI end-to-end test (needs a display)" OFF)
 option(BATTLESHIP_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 option(BATTLESHIP_ENABLE_SANITIZERS "Instrument with ASan and UBSan" OFF)
@@ -51,3 +52,9 @@ if(BATTLESHIP_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
+
+if(BATTLESHIP_BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
+
+include(Packaging)

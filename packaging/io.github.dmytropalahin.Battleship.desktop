@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Battleship
+Name[fr]=Bataille Navale
+GenericName=Strategy game
+GenericName[fr]=Jeu de stratégie
+Comment=Sink the pirate fleet before it sinks yours
+Comment[fr]=Coulez la flotte pirate avant qu'elle ne coule la vôtre
+Exec=battleship
+Icon=io.github.dmytropalahin.Battleship
+Terminal=false
+Categories=Game;StrategyGame;BoardGame;GTK;
+Keywords=battleship;bataille;navale;board;
+StartupNotify=true
