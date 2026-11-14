@@ -1,0 +1,304 @@
+\chapter{L'adversaire : trois stratégies mesurées}
+\label{chap-adversaire}
+
+\section{Une fonction pure}
+
+L'adversaire artificiel se résume à une fonction (\cref{lst-ia}) : étant donné un niveau,
+la connaissance publique du plateau visé et un générateur aléatoire, elle désigne la
+prochaine case à viser.
+
+\begin{lstlisting}[caption={L'adversaire tout entier (\fichier{include/battleship/ai.h}).},
+                   label={lst-ia}]
+bs_status bs_ai_choose_target(bs_difficulty difficulty,
+                              const bs_knowledge *knowledge,
+                              bs_rng *rng, bs_coord *target);
+\end{lstlisting}
+
+Cette fonction \textbf{ne garde aucune mémoire} d'un appel à l'autre. \enquote{Un bateau
+est blessé} n'est pas une information à retenir : elle se lit sur le plateau, où une case
+\code{HIT} désigne un pont touché d'un bateau encore à flot.
+
+\begin{attention}
+Dans la version~1, la poursuite d'un bateau touché reposait sur une variable globale. Après
+un coup au but, l'ordinateur tirait au sort l'une des quatre voisines ; si elle était hors
+du plateau ou déjà jouée, il \emph{abandonnait la poursuite} et retournait au tir aléatoire,
+oubliant le bateau blessé. Pire, la case tirée au sort était lue dans le tableau
+\emph{avant} que l'on vérifie qu'elle était sur le plateau : une lecture hors limites,
+comportement indéfini en C.
+\end{attention}
+
+Une fonction sans mémoire ne peut pas se désynchroniser du jeu. Elle se prête aussi à toutes
+les expériences : on peut lui soumettre n'importe quelle position, la faire jouer contre
+elle-même, ou s'en servir pour conseiller le joueur.
+
+\section{Trois niveaux, une compétence de plus à chaque marche}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xccc@{}}
+    \toprule
+    \textbf{Niveau} & \textbf{Stratégie} &
+    \rotatebox{60}{\small ne rejoue pas} & \rotatebox{60}{\small déduit} &
+    \rotatebox{60}{\small achève, anticipe} \\
+    \midrule
+    Facile    & Tire au hasard parmi les cases non encore visées. &
+                $\bullet$ & & \\
+    Moyen     & Tire au hasard, mais jamais sur une case que les règles prouvent vide. &
+                $\bullet$ & $\bullet$ & \\
+    Difficile & Achève les bateaux blessés ; en chasse, vise la case la plus probable. &
+                $\bullet$ & $\bullet$ & $\bullet$ \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Les trois niveaux de l'adversaire.}
+  \label{tab-niveaux}
+\end{table}
+
+Le niveau facile ignore les déductions du \cref{sec-deductions} : il peut tirer sur une
+case marquée d'un drapeau. Le niveau moyen s'en sert et c'est sa seule différence. Le
+niveau difficile y ajoute un raisonnement sur les bateaux qui restent.
+
+\section{Le niveau difficile : une carte de densité}
+
+\subsection{Principe}
+
+Le niveau difficile se pose une question simple : \emph{parmi toutes les façons de placer
+les bateaux encore à flot qui sont compatibles avec ce que je sais, combien passent par
+cette case ?} La case où passent le plus de placements est la plus probable.
+
+Notons $K$ la connaissance courante, $n_\ell$ le nombre de bateaux de longueur $\ell$ encore
+à flot et $P_\ell(K)$ l'ensemble des positions cohérentes pour un tel bateau. Le score
+d'une case $c$ encore inconnue est
+\begin{equation}
+  s(c) \;=\; \sum_{\ell = 1}^{4} n_\ell \cdot
+  \bigl|\{\, p \in P_\ell(K) \;:\; c \in p \,\}\bigr| .
+  \label{eq-densite}
+\end{equation}
+
+Une position $p$ est \emph{cohérente} avec $K$ lorsque les trois conditions suivantes sont
+réunies :
+
+\begin{enumerate}
+  \item chacune de ses cases est soit inconnue, soit un pont touché d'un bateau à flot ;
+  \item elle n'est pas faite \emph{uniquement} de ponts touchés --- ce bateau serait déjà
+        coulé ;
+  \item aucun pont touché ne la jouxte sans lui appartenir --- deux bateaux ne se touchent
+        pas.
+\end{enumerate}
+
+La \cref{fig-densite} montre la carte obtenue sur un plateau vierge. Un coin n'est couvert
+que par 16 placements, le centre par 36 : sans qu'aucune règle ne le lui dise, l'ordinateur
+ouvre la partie au centre, là où les grands bateaux ont le plus de façons de se trouver.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}[scale=0.58]
+    % Scores réels calculés par bs_ai_density() sur un plateau vierge (symétrique).
+    \foreach \v [count=\i from 0] in {
+      16,22,25,26,26,26,26,25,22,16,
+      22,28,31,32,32,32,32,31,28,22,
+      25,31,34,35,35,35,35,34,31,25,
+      26,32,35,36,36,36,36,35,32,26,
+      26,32,35,36,36,36,36,35,32,26,
+      26,32,35,36,36,36,36,35,32,26,
+      26,32,35,36,36,36,36,35,32,26,
+      25,31,34,35,35,35,35,34,31,25,
+      22,28,31,32,32,32,32,31,28,22,
+      16,22,25,26,26,26,26,25,22,16} {
+      \pgfmathtruncatemacro{\col}{mod(\i,10)}
+      \pgfmathtruncatemacro{\row}{9 - int(\i/10)}
+      \pgfmathtruncatemacro{\teinte}{(\v - 16) * 5}
+      \fill[ocean!\teinte!ecume] (\col,\row) rectangle ++(1,1);
+      \ifnum\v>29
+        \node[font=\sffamily\scriptsize, text=white] at (\col+0.5,\row+0.5) {\v};
+      \else
+        \node[font=\sffamily\scriptsize, text=marine] at (\col+0.5,\row+0.5) {\v};
+      \fi
+    }
+    \plateau{10}
+    \foreach \l [count=\i from 0] in {A,B,C,D,E,F,G,H,I,J}
+      \node[font=\sffamily\scriptsize, text=ardoise] at (\i+0.5,10.45) {\l};
+    \foreach \n in {1,...,10}
+      \node[font=\sffamily\scriptsize, text=ardoise] at (-0.45,10.5-\n) {\n};
+  \end{tikzpicture}
+  \caption{Carte de densité d'un plateau vierge : nombre de placements de la flotte
+           couvrant chaque case (valeurs produites par \code{bs\_ai\_density()}).}
+  \label{fig-densite}
+\end{figure}
+
+\subsection{Chasser et achever avec le même code}
+
+Tant qu'aucun bateau n'est blessé, tous les placements cohérents comptent : c'est la
+\emph{chasse}. Dès qu'une case \code{HIT} existe, on ne retient que les placements qui
+\emph{expliquent} au moins un pont touché, pondérés par le nombre de ponts expliqués. La
+même formule devient alors une procédure d'\emph{achèvement} :
+
+\begin{itemize}
+  \item autour d'un pont touché isolé, les quatre voisines reçoivent un score, d'autant
+        plus élevé que de longs bateaux peuvent s'étendre dans leur direction ;
+  \item dès que deux ponts alignés sont touchés, la condition~3 élimine toute position
+        perpendiculaire : seules les deux cases prolongeant la ligne conservent un score.
+\end{itemize}
+
+Aucun cas particulier n'est programmé pour cela ; le comportement découle des trois
+conditions de cohérence (\cref{alg-densite}).
+
+\begin{algorithm}[ht]
+  \caption{Choix d'une cible au niveau difficile}
+  \label{alg-densite}
+  \KwIn{la connaissance $K$, un générateur aléatoire $g$}
+  \KwOut{une case à viser}
+  $s(c) \gets 0$ pour toute case $c$\;
+  $\mathit{achever} \gets$ il existe une case \textsc{touchée} dans $K$\;
+  \ForEach{longueur $\ell$ telle que $n_\ell > 0$}{
+    \ForEach{position $p$ d'un bateau de longueur $\ell$ sur le plateau}{
+      \lIf{$p$ n'est pas cohérente avec $K$}{passer à la suivante}
+      $h \gets$ nombre de cases \textsc{touchées} de $p$\;
+      \lIf{$\mathit{achever}$ et $h = 0$}{passer à la suivante}
+      $w \gets n_\ell \times h$ si $\mathit{achever}$, $n_\ell$ sinon\;
+      \lForEach{case inconnue $c$ de $p$}{$s(c) \gets s(c) + w$}
+    }
+  }
+  \Return une case de score maximal, tirée au sort avec $g$ en cas d'égalité\;
+\end{algorithm}
+
+Le coût est dérisoire : quatre longueurs, deux orientations, cent origines, des bateaux de
+quatre cases au plus --- quelques milliers d'opérations par tir. Le tirage au sort entre
+cases de même score évite que l'ordinateur joue toujours la même ouverture.
+
+\section{Mesurer plutôt que supposer}
+
+\subsection{Protocole}
+
+Le programme \code{battleship-cli simulate} fait jouer les stratégies sans interface. Deux
+expériences sont menées, entièrement déterminées par une graine :
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+  \item[En solitaire] Une stratégie tire sur une flotte aléatoire jusqu'à la couler. On
+    compte les tirs : il en faut au moins 20, au plus 100. Cette mesure isole la qualité de
+    la stratégie.
+  \item[En duel] Deux stratégies s'affrontent avec la règle réelle \enquote{touché, on
+    rejoue}. Chaque appariement est joué en alternant le camp qui commence, pour annuler
+    l'avantage du premier tir.
+\end{description}
+
+Tous les chiffres de ce chapitre proviennent de la commande
+\code{battleship-cli simulate -{}-games 10000 -{}-seed 1} et peuvent être reproduits à
+l'identique.
+
+\subsection{Résultats}
+
+Les niveaux sont nettement ordonnés (\cref{tab-solo,fig-histogramme}) : il faut en moyenne
+\num{96.2} tirs au niveau facile, \num{65.8} au niveau moyen et \num{55.3} au niveau
+difficile. En duel (\cref{tab-duels}), le niveau difficile l'emporte sur le moyen dans
+\SI{87.5}{\percent} des parties, et le niveau moyen remporte \num{9999} de ses
+\num{10000} parties contre le facile. La diagonale, proche de \SI{50}{\percent}, confirme
+que l'alternance des camps neutralise bien l'avantage du premier tir.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}l S[table-format=2.2] S[table-format=1.2] S[table-format=2.0]
+                    S[table-format=2.0] S[table-format=3.0] S[table-format=3.0]@{}}
+    \toprule
+    \textbf{Niveau} & {\textbf{Moyenne}} & {\textbf{Écart-type}} & {\textbf{Min.}} &
+    {\textbf{Médiane}} & {\textbf{9\textsuperscript{e} décile}} & {\textbf{Max.}} \\
+    \midrule
+    Facile    & 96.19 & 4.10 & 69 & 97 & 100 & 100 \\
+    Moyen     & 65.83 & 6.07 & 44 & 66 &  74 &  85 \\
+    Difficile & 55.27 & 6.80 & 28 & 56 &  64 &  79 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Nombre de tirs nécessaires pour couler une flotte aléatoire
+           (\num{10000} parties par niveau).}
+  \label{tab-solo}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=0.96\textwidth, height=6.4cm,
+      xlabel={Nombre de tirs pour couler la flotte},
+      ylabel={Parties (sur \num{10000})},
+      xmin=25, xmax=101, ymin=0,
+      xtick={30,40,...,100}, ytick distance=500,
+      scaled y ticks=false,
+      yticklabel={\pgfmathprintnumber[fixed, 1000 sep={\,}]{\tick}},
+      axis lines=left, axis line style={draw=ardoise},
+      tick style={draw=ardoise}, tick label style={font=\sffamily\footnotesize},
+      label style={font=\sffamily\small},
+      ymajorgrids, grid style={draw=ardoise!20},
+      legend style={draw=none, fill=none, font=\sffamily\small, at={(0.03,0.97)},
+                    anchor=north west, legend cell align=left},
+      const plot mark mid, area style, enlarge x limits=false,
+    ]
+      \addplot[draw=vert, fill=vert, fill opacity=0.30, line width=0.7pt]
+        table[x=shots, y=hard] {data/benchmark.dat} \closedcycle;
+      \addlegendentry{Difficile}
+      \addplot[draw=ocean, fill=ocean, fill opacity=0.30, line width=0.7pt]
+        table[x=shots, y=medium] {data/benchmark.dat} \closedcycle;
+      \addlegendentry{Moyen}
+      \addplot[draw=corail, fill=corail, fill opacity=0.30, line width=0.7pt]
+        table[x=shots, y=easy] {data/benchmark.dat} \closedcycle;
+      \addlegendentry{Facile}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Distribution du nombre de tirs par niveau. Le niveau facile bute sur le
+           plafond de 100 tirs ; les deux autres forment des cloches bien séparées.}
+  \label{fig-histogramme}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}l S[table-format=3.1] S[table-format=3.1] S[table-format=2.1]@{}}
+    \toprule
+    & {\textbf{contre Facile}} & {\textbf{contre Moyen}} & {\textbf{contre Difficile}} \\
+    \midrule
+    \textbf{Facile}    &  49.6 &   0.0 &  0.0 \\
+    \textbf{Moyen}     & 100.0 &  49.7 & 12.0 \\
+    \textbf{Difficile} & 100.0 &  87.5 & 50.0 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Duels : pourcentage de parties gagnées par le niveau de la ligne
+           (\num{10000} parties par case).}
+  \label{tab-duels}
+\end{table}
+
+\subsection{Comment les niveaux ont été choisis}
+
+Les trois niveaux ne résultent pas d'une intuition mais d'une comparaison. Quatre stratégies
+candidates ont été mesurées pendant le développement (\cref{tab-candidats}).
+
+\begin{table}[H]
+  \centering
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X S[table-format=2.1]
+                               S[table-format=+2.1] l@{}}
+    \toprule
+    \textbf{Stratégie} & {\textbf{Tirs}} & {\textbf{Gain}} & \textbf{Retenue comme} \\
+    \midrule
+    A. Hasard pur & 96.2 & & Facile \\
+    B. A + respect des déductions & 65.8 & -30.4 & Moyen \\
+    C. B + poursuite classique des bateaux touchés & 58.2 & -7.6 & --- \\
+    D. B + carte de densité (chasse et achèvement) & 55.3 & -2.9 & Difficile \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Stratégies candidates. Le gain est exprimé par rapport à la ligne précédente ;
+           la stratégie~C a été mesurée sur \num{2000} parties.}
+  \label{tab-candidats}
+\end{table}
+
+L'enseignement de ce tableau est contre-intuitif. Avec la règle de non-contact, la
+compétence qui compte le plus n'est ni la poursuite des bateaux touchés ni le calcul de
+probabilités : c'est le simple fait de \textbf{ne pas tirer là où les règles prouvent qu'il
+n'y a rien}. À elle seule, cette discipline économise trente tirs. La poursuite classique en
+ajoute moins de huit, et la carte de densité trois de plus.
+
+Les niveaux ont donc été espacés d'après ces mesures : la stratégie~C, trop proche de~D,
+n'aurait pas constitué un niveau intermédiaire perceptible.
+
+\begin{retenir}[Un plancher difficile à abaisser]
+Pourquoi le meilleur niveau a-t-il encore besoin de 55 tirs pour 20 cases à toucher ? À
+cause des quatre bateaux d'une seule case. Aucun raisonnement ne permet de les
+\emph{localiser} : une fois les grands bateaux coulés, il faut explorer presque toutes les
+cases restantes. La carte de densité se rapproche de ce plancher ; elle ne peut pas le
+supprimer.
+\end{retenir}

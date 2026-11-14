@@ -1,0 +1,291 @@
+\chapter{Le modèle : un moteur de jeu autonome}
+\label{chap-modele}
+
+Le modèle est une bibliothèque de \num{1343} lignes, écrite en C11~\cite{iso9899}, qui connaît
+les règles de la bataille navale et rien d'autre. Ce chapitre en présente les structures de données, puis les
+traitements, dans l'ordre de la chaîne de modules de la \cref{fig-modules}.
+
+\section{Représenter un plateau}
+
+Dans la version~1, une case était décrite par une structure mêlant l'état du jeu et
+l'affichage (\cref{lst-v1-cell}). Tester si un bateau était coulé supposait d'avoir construit
+des boutons.
+
+\begin{lstlisting}[caption={Version~1 : la case connaît son bouton.}, label={lst-v1-cell}]
+typedef struct {
+    GtkWidget *button;  // Button to display the cell
+    gboolean is_ship;   // Flag indicating whether there is a ship in this box
+    gboolean is_hit;
+    gboolean is_shot;
+} Cell;
+\end{lstlisting}
+
+La version~2 sépare deux natures d'information que la première confondait : le
+\textbf{secret} --- où sont les bateaux --- et ce qui est \textbf{public} --- ce que les
+tirs ont révélé (\cref{lst-board}).
+
+\begin{lstlisting}[caption={Le plateau d'un camp (\fichier{include/battleship/board.h}).},
+                   label={lst-board}]
+typedef struct bs_ship {
+    bs_coord origin;            /* pont le plus en haut à gauche */
+    bs_orientation orientation; /* direction des ponts suivants   */
+    uint8_t length;             /* nombre de ponts, de 1 à 4      */
+    uint8_t hits;               /* ponts déjà touchés             */
+} bs_ship;
+
+typedef struct bs_board {
+    bs_ship ships[BS_FLEET_SIZE];
+    uint8_t ship_count;            /* bateaux placés                    */
+    uint8_t ships_afloat;          /* bateaux non coulés                */
+    uint8_t decks_afloat;          /* ponts non touchés                 */
+    int8_t  ship_at[BS_CELL_COUNT]; /* secret : indice du bateau, ou -1 */
+    uint8_t state[BS_CELL_COUNT];   /* public : ce que la case a révélé */
+} bs_board;
+\end{lstlisting}
+
+L'état public d'une case prend l'une des cinq valeurs du \cref{tab-etats}. La cinquième,
+\code{EXCLUDED}, n'existait pas dans la version~1 comme donnée : elle n'apparaissait que
+sous la forme d'un drapeau posé sur un bouton.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabularx}{\textwidth}{@{}lX@{}}
+    \toprule
+    \textbf{État} & \textbf{Signification pour l'attaquant} \\
+    \midrule
+    \code{BS\_CELL\_UNKNOWN}  & Jamais visée, rien n'est connu. \\
+    \code{BS\_CELL\_MISS}     & Visée : de l'eau. \\
+    \code{BS\_CELL\_HIT}      & Visée : pont d'un bateau encore à flot. \\
+    \code{BS\_CELL\_SUNK}     & Visée : pont d'un bateau coulé. \\
+    \code{BS\_CELL\_EXCLUDED} & Non visée, mais \emph{prouvée} vide par la règle de
+                                non-contact. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{États publics d'une case.}
+  \label{tab-etats}
+\end{table}
+
+\begin{retenir}[Invariants du plateau]
+Toutes les fonctions du module préservent trois propriétés, que les tests de propriétés
+revérifient après chaque tir de \num{2250} parties (\cref{sec-proprietes}) :
+\begin{itemize}
+  \item les bateaux ne se chevauchent pas, ne se touchent pas et ne sortent pas du plateau ;
+  \item \code{decks\_afloat} est égal au nombre de ponts non encore touchés ;
+  \item une case est \code{SUNK} si et seulement si elle appartient à un bateau dont tous
+        les ponts sont touchés.
+\end{itemize}
+\end{retenir}
+
+\subsection{Aucune allocation dynamique}
+
+Les dimensions du jeu sont fixes : tout tient dans des tableaux de taille connue à la
+compilation. Une partie entière, \code{bs\_game}, occupe 800~octets. Le moteur n'appelle
+jamais \code{malloc}. Il n'y a donc ni échec d'allocation à traiter, ni fuite possible, et
+copier une partie se réduit à une affectation. C'est ce qui rend bon marché l'exécution de
+millions de parties simulées.
+
+\section{Placer une flotte au hasard}
+
+\subsection{L'algorithme de la version~1 : tirer jusqu'à ce que ça rentre}
+
+La première version tirait une position et une orientation au hasard, vérifiait si le
+bateau tenait, et recommençait sinon, jusqu'à un million de tentatives. La méthode
+fonctionne, mais sa durée n'est pas bornée de façon utile et son test de validité comportait
+une erreur de borne, masquée par le choix des intervalles de tirage.
+
+\subsection{L'algorithme de la version~2 : énumérer, puis choisir}
+
+Pour chaque bateau, du plus long au plus court, on dresse la liste de \emph{toutes} les
+positions licites, puis on en choisit une uniformément (\cref{alg-placement}). Une grille
+de 100 cases et deux orientations donnent au plus 200 candidats : l'énumération est
+immédiate, et l'algorithme ne dépend plus de la chance pour terminer.
+
+\begin{algorithm}[ht]
+  \caption{Placement aléatoire d'une flotte}
+  \label{alg-placement}
+  \KwIn{un générateur aléatoire $g$}
+  \KwOut{un plateau portant les dix bateaux, sans contact}
+  \Repeat{la flotte est complète}{
+    vider le plateau\;
+    \ForEach{longueur $\ell$ de la flotte, dans l'ordre $4, 3, 3, 2, 2, 2, 1, 1, 1, 1$}{
+      $P \gets$ ensemble des couples (origine, orientation) où un bateau de longueur $\ell$
+      tient sans toucher un bateau déjà placé\;
+      \lIf{$P = \emptyset$}{abandonner cette tentative \Com*[f]{impasse}}
+      choisir $p \in P$ uniformément avec $g$ et placer le bateau en $p$\;
+    }
+  }
+\end{algorithm}
+
+Le test \enquote{tient sans toucher} est une simple inspection : on parcourt le rectangle
+occupé par le bateau, agrandi d'une case dans toutes les directions, et l'on refuse la
+position dès qu'une case de ce rectangle porte déjà un bateau. Un bateau d'un seul pont est
+identique dans les deux orientations ; il n'est compté qu'une fois, pour ne pas fausser le
+tirage.
+
+Une impasse --- plus aucune place pour un bateau restant --- est théoriquement possible.
+Elle ne s'est produite dans aucune des flottes tirées par les tests, soit plusieurs
+dizaines de milliers ; la boucle externe, bornée à mille tentatives, ne sert qu'à transformer un
+\enquote{ne peut pas arriver} en erreur signalée plutôt qu'en boucle sans fin.
+
+\section{Tirer, et en tirer des conclusions}
+\label{sec-deductions}
+
+Un tir met à jour l'historique public puis les \emph{déductions} que la règle de
+non-contact autorise (\cref{fig-deductions}) :
+
+\begin{itemize}
+  \item \textbf{touché} --- les quatre voisines diagonales de la case sont de l'eau, car
+        un bateau est droit et aucun autre ne peut le frôler ;
+  \item \textbf{coulé} --- toute la ceinture du bateau est de l'eau.
+\end{itemize}
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}[scale=0.62]
+    % ----------------------------------------------------- (a) après un coup au but
+    \begin{scope}
+      \plateau{7}
+      \fill[ocean!25] (2,3) rectangle (5,4);
+      \draw[ocean, dashed, line width=0.6pt, rounded corners=1.5pt] (2.1,3.1) rectangle (4.9,3.9);
+      \fill[corail] (3.5,3.5) circle (0.24);
+      \foreach \x/\y in {2/2, 4/2, 2/4, 4/4} {\drapeau{\x}{\y}}
+      \node[note] at (3.5,-0.8) {(a) touché :\\4 cases exclues};
+    \end{scope}
+    % ------------------------------------------------------ (b) après le naufrage
+    \begin{scope}[xshift=9.5cm]
+      \plateau{7}
+      \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+      \foreach \x in {2,3,4} \fill[corail] (\x+0.5,3.5) circle (0.2);
+      \foreach \x in {1,...,5} { \drapeau{\x}{2} \drapeau{\x}{4} }
+      \drapeau{1}{3} \drapeau{5}{3}
+      \node[note] at (3.5,-0.8) {(b) coulé :\\12 cases exclues};
+    \end{scope}
+  \end{tikzpicture}
+  \caption{Déductions tirées d'un tir. Les croix marquent les cases que le moteur classe
+           \code{EXCLUDED} ; en (a) le reste du bateau, en pointillé, est encore inconnu.}
+  \label{fig-deductions}
+\end{figure}
+
+Ces déductions sont calculées \emph{par le modèle}, au moment du tir, et non par chaque
+interface. Dans la version~1, le marquage des drapeaux était recopié dans chacun des trois
+gestionnaires de clic, une fois pour le joueur et une fois pour l'ordinateur : c'était à
+lui seul près de la moitié de leur longueur. Il tient désormais en deux fonctions d'une
+dizaine de lignes.
+
+\section{Ce que l'attaquant a le droit de savoir}
+\label{sec-connaissance}
+
+Pour que l'adversaire artificiel ne puisse pas tricher, il ne suffit pas de lui demander
+de ne pas regarder. Le modèle extrait du plateau une structure distincte, qui ne contient
+que l'information publique (\cref{lst-knowledge}).
+
+\begin{lstlisting}[caption={La connaissance publique d'un plateau.}, label={lst-knowledge}]
+typedef struct bs_knowledge {
+    /* état public de chaque case */
+    uint8_t state[BS_CELL_COUNT];
+    /* nombre de bateaux encore à flot, par longueur */
+    uint8_t afloat_by_length[BS_MAX_SHIP_LENGTH + 1];
+} bs_knowledge;
+\end{lstlisting}
+
+L'adversaire reçoit cette structure et rien d'autre. La position des bateaux ne fait pas
+partie de ses arguments : l'exigence~C3 est satisfaite par les types, sans discipline
+particulière à respecter.
+
+\section{La partie est un automate}
+
+Le module \code{game} réunit deux plateaux, le niveau de l'adversaire, le score et le tour.
+Son comportement est celui de l'automate de la \cref{fig-automate}.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}[node distance=30mm,
+      etat/.style={boite, minimum width=3.0cm, minimum height=1.0cm, rounded corners=5mm}]
+    \node[etat, fill=ecume] (h) {Tour du joueur};
+    \node[etat, fill=ecume, right=of h] (c) {Tour de l'ordinateur};
+    \node[etat, coeur, below=18mm of $(h)!0.5!(c)$] (o) {Partie terminée};
+    \node[circle, fill=marine, inner sep=2.2pt, left=26mm of h] (start) {};
+
+    \draw[fleche] (start) -- node[above, note] {initialisation} (h);
+    \draw[fleche] (h) to[bend left=14] node[above, note] {manqué} (c);
+    \draw[fleche] (c) to[bend left=14] node[below, note] {manqué} (h);
+    \draw[fleche] (h) to[loop above, looseness=5] node[above, note] {touché} (h);
+    \draw[fleche] (c) to[loop above, looseness=5] node[above, note] {touché} (c);
+    \draw[fleche] (h) |- node[pos=0.25, left, note] {flotte adverse\\coulée} (o);
+    \draw[fleche] (c) |- node[pos=0.25, right, note] {flotte du joueur\\coulée} (o);
+  \end{tikzpicture}
+  \caption{L'automate d'une partie. Un coup au but laisse la main au tireur.}
+  \label{fig-automate}
+\end{figure}
+
+Le principe de l'interface du module est qu'\textbf{un appel effectue un pas, et un seul},
+puis rend compte de ce qui a changé (\cref{lst-game-api}). Le moteur ne bloque jamais, ne
+temporise jamais et n'appelle personne en retour. Le rythme est l'affaire de l'appelant :
+l'interface graphique attend une demi-seconde entre deux tirs de l'ordinateur, le
+simulateur n'attend pas du tout.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
+                   caption={L'essentiel de l'interface d'une partie
+                            (\fichier{include/battleship/game.h}).}, label={lst-game-api}]
+bs_status bs_game_init(bs_game *game, bs_difficulty difficulty, uint64_t seed);
+bs_status bs_game_reshuffle(bs_game *game);
+bs_status bs_game_human_fire(bs_game *game, bs_coord target, bs_turn_report *report);
+bs_status bs_game_computer_fire(bs_game *game, bs_turn_report *report);
+bs_phase  bs_game_phase(const bs_game *game);
+\end{lstlisting}
+
+\subsection{Les erreurs sont des valeurs}
+
+Toute opération qui peut être refusée renvoie un \code{bs\_status} : succès, argument
+invalide, position hors du plateau, collision, case déjà jouée, action interdite dans la
+phase en cours. Une opération refusée \emph{ne modifie rien} (exigence~C4). Tirer hors de
+son tour, par exemple, ne change ni le plateau ni le score ; un test le vérifie
+explicitement. Le contrôleur peut ainsi transmettre au modèle n'importe quel clic sans le
+filtrer : le modèle est le seul juge.
+
+\section{Un hasard reproductible}
+\label{sec-hasard}
+
+\subsection{Le hasard est un argument}
+
+Le moteur n'appelle jamais \code{rand()}. Chaque décision aléatoire puise dans un
+générateur, \code{bs\_rng}, que l'appelant possède et initialise par une graine. Deux
+conséquences :
+
+\begin{itemize}
+  \item une graine rejoue une partie entière --- placement des deux flottes et tous les
+        coups de l'ordinateur ; c'est la condition pour qu'un test portant sur une
+        stratégie aléatoire soit déterministe ;
+  \item le résultat ne dépend pas de la bibliothèque C de la plate-forme, dont le
+        \code{rand()} varie d'un système à l'autre.
+\end{itemize}
+
+Le générateur est \emph{xoshiro256**}~\cite{blackman2021}, dont l'état de 256~bits est
+rempli à partir de la graine par \emph{SplitMix64}~\cite{steele2014}. Ses premières sorties
+sont consignées dans les tests : toute différence entre deux plates-formes serait détectée.
+
+\subsection{Tirer un entier sans biais}
+
+La version~1 obtenait un entier de $[0, n[$ par \code{rand() \% n}. L'opération est biaisée
+dès que $n$ ne divise pas le nombre de valeurs possibles du générateur. Avec un générateur
+sur 3~bits et $n = 3$, par exemple, les huit valeurs $0, \dots, 7$ donnent les restes
+$0, 1, 2, 0, 1, 2, 0, 1$ : le reste $2$ sort deux fois sur huit quand les autres sortent
+trois fois.
+
+Le module utilise la méthode de Lemire~\cite{lemire2019}, qui multiplie au lieu de diviser
+et rejette les quelques tirages responsables du biais (\cref{lst-lemire}). Un test vérifie
+l'uniformité sur \num{60000} tirages d'un dé.
+
+\begin{lstlisting}[caption={Entier uniforme dans $[0, \mathit{bound}[$
+                            (\fichier{src/core/rng.c}).}, label={lst-lemire}]
+uint64_t product = (uint64_t)next_u32(rng) * bound;
+uint32_t low = (uint32_t)product;
+if (low < bound) {
+    const uint32_t threshold = (0U - bound) % bound;
+    while (low < threshold) {            /* tirage biaisé : on le rejette */
+        product = (uint64_t)next_u32(rng) * bound;
+        low = (uint32_t)product;
+    }
+}
+return (uint32_t)(product >> 32);
+\end{lstlisting}

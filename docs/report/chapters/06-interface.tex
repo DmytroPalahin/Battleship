@@ -1,0 +1,282 @@
+\chapter{L'interface graphique}
+\label{chap-interface}
+
+\section{Rappels sur GTK}
+
+GTK~\cite{gtk3} est une bibliothèque de composants graphiques, les \emph{widgets}, écrite
+en C. Trois
+de ses notions, vues en cours, structurent ce chapitre.
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+  \item[Héritage par inclusion] Un bouton \emph{est} un conteneur, qui \emph{est} un
+    widget : chaque structure commence par celle dont elle hérite, et des macros de
+    transtypage (\code{GTK\_WINDOW()}, \code{GTK\_BOX()}\dots) permettent d'appliquer à un
+    objet les fonctions de ses ancêtres.
+  \item[Conteneurs] Une fenêtre ne contient qu'un seul widget ; on y place donc des boîtes
+    et des grilles, qui organisent les autres.
+  \item[Programmation événementielle] Une fois la boucle d'événements lancée, le programme
+    ne décide plus de l'ordre des opérations. Il se contente d'avoir \emph{attaché}, au
+    préalable, une fonction de rappel à chaque événement qui l'intéresse, avec
+    \code{g\_signal\_connect()}.
+\end{description}
+
+\section{La vue}
+
+\subsection{L'arbre des composants}
+
+La fenêtre principale contient une pile (\code{GtkStack}) de deux pages : le menu et le jeu.
+Changer d'écran revient à changer la page visible, sans détruire ni recréer de fenêtre
+(\cref{fig-widgets}).
+
+\begin{figure}[ht]
+  \centering
+  \begin{forest}
+    for tree={
+      font=\sffamily\footnotesize, draw=marine, line width=0.5pt, rounded corners=2pt,
+      fill=white, inner sep=3.5pt, grow'=0, anchor=west, child anchor=west,
+      parent anchor=east, l sep=6mm, s sep=1.4mm, forked edge, fork sep=3mm,
+      edge={draw=marine, line width=0.5pt},
+    },
+    feuille/.style={fill=brume, draw=ardoise!70},
+    [GtkApplicationWindow, fill=marine, text=white
+      [GtkStack
+        [{page \enquote{menu}}, fill=ecume
+          [{barre d'infos}, feuille]
+          [{titre}, feuille]
+          [{trois boutons de niveau}, feuille]
+        ]
+        [{page \enquote{jeu}}, fill=ecume
+          [{barre d'infos}, feuille]
+          [{plateaux}
+            [{flotte du joueur (GtkGrid)}, feuille]
+            [{illustration}, feuille]
+            [{flotte adverse (GtkGrid)}, feuille]
+          ]
+          [{pied}
+            [{niveau en cours}, feuille]
+            [{ligne de statut}, feuille]
+            [{boutons de commande}, feuille]
+          ]
+        ]
+      ]
+    ]
+  \end{forest}
+  \caption{Arbre des composants de la fenêtre principale. Les nœuds intermédiaires sont
+           des boîtes (\code{GtkBox}). La barre d'infos ouvre les règles et la présentation ; chaque flotte réunit un titre, une grille de cent
+           boutons encadrée par ses coordonnées, et un score.}
+  \label{fig-widgets}
+\end{figure}
+
+\subsection{Un bouton doit savoir qui il est}
+
+Cent boutons partagent la même fonction de rappel ; chacun doit lui indiquer \emph{quelle
+case} il représente. Le cours résout ce problème pour le jeu du trésor en associant à chaque
+bouton une petite structure qui regroupe un pointeur vers le parent et l'identifiant de la
+boîte. Le projet reprend ce patron tel quel (\cref{lst-contexte}).
+
+\begin{lstlisting}[caption={Contexte d'un bouton de case (\fichier{src/ui/view.c}).},
+                   label={lst-contexte}]
+typedef struct cell_context {
+    bs_view *view;   /* la structure parente          */
+    bs_coord coord;  /* l'identité du bouton : sa case */
+} cell_context;
+
+static void on_cell_clicked(cell_context *context)
+{
+    const bs_view *view = context->view;
+    if (view->actions.cell_activated != NULL) {
+        view->actions.cell_activated(context->coord, view->user_data);
+    }
+}
+
+/* À la construction de la grille : */
+g_signal_connect_swapped(button, "clicked", G_CALLBACK(on_cell_clicked),
+                         &view->cell_contexts[index]);
+\end{lstlisting}
+
+La connexion utilise \code{g\_signal\_connect\_swapped()} : la fonction de rappel reçoit
+d'abord son contexte et peut ignorer le widget émetteur. Elle ne fait qu'une chose,
+\emph{traduire} : le signal \enquote{clicked} d'un bouton devient l'intention
+\enquote{le joueur vise la case C4}, transmise au contrôleur (\cref{sec-pointeurs}).
+
+\subsection{L'apparence est déclarée, pas programmée}
+
+\begin{attention}
+Dans la version~1, chaque libellé recevait son propre fournisseur de style, créé par le
+code C : 27~appels à \code{gtk\_css\_provider\_new()}, dont plusieurs jamais libérés. Chaque
+changement d'état d'une case chargeait une nouvelle image depuis le disque, par un chemin
+relatif qui ne fonctionnait que depuis le dossier du programme.
+\end{attention}
+
+Dans la version~2, le code C n'attribue aux widgets que des \emph{noms de classe}. Montrer
+qu'une case est touchée, c'est remplacer sa classe \code{water} par \code{hit}
+(\cref{lst-set-cell}). Ce à quoi ressemble une classe est décrit une fois pour toutes dans
+une feuille de style (\cref{lst-css}), chargée par un unique fournisseur.
+
+\begin{lstlisting}[caption={Mise à jour d'une case : un simple changement de classe.},
+                   label={lst-set-cell}]
+if (previous != look) {
+    GtkStyleContext *context = gtk_widget_get_style_context(button);
+    gtk_style_context_remove_class(context, LOOK_CLASSES[previous]);
+    gtk_style_context_add_class(context, LOOK_CLASSES[look]);
+    view->looks[owner][index] = look;
+}
+gtk_widget_set_sensitive(button, sensitive);
+\end{lstlisting}
+
+\begin{lstlisting}[language=css, caption={Extrait de \fichier{assets/style.css}.},
+                   label={lst-css}]
+button.cell.hit        { background-image: url("images/explosion.png"); }
+button.cell.own.sunk   { background-image: url("images/ship-sunk-player.png"); }
+button.cell.enemy.sunk { background-image: url("images/ship-sunk-enemy.png"); }
+button.cell.excluded   { background-image: url("images/flag.png"); }
+
+/* Jeu au clavier : le missile suit le focus sur la grille adverse. */
+button.cell.enemy.water:focus { background-image: url("images/rocket.png"); }
+\end{lstlisting}
+
+La dernière règle remplace à elle seule quatre fonctions de la version~1, qui affichaient
+et effaçaient l'image du missile à chaque appui sur une flèche du clavier.
+
+\subsection{Des ressources incorporées à l'exécutable}
+
+Images, sons et feuille de style sont compilés par \code{glib-compile-resources} et liés à
+l'exécutable. Le programme tient en un seul fichier d'environ un mégaoctet, se lance depuis
+n'importe quel dossier (exigence~C6), et une ressource manquante devient une erreur de
+\emph{compilation} au lieu d'une image absente à l'exécution.
+
+\section{Le contrôleur}
+
+\subsection{Synchroniser, toujours tout}
+
+Le contrôleur possède une fonction centrale, \code{synchronise()} --- le cours nomme son
+équivalent \code{ctrl\_tresor\_synchroniser()}. Elle lit le modèle en entier et le pousse
+vers la vue :
+deux cents cases, deux scores, le niveau, une ligne de statut (\cref{lst-synchro}). Elle est
+appelée après \emph{chaque} changement.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
+                   caption={Le cœur de la synchronisation (\fichier{src/ui/controller.c}).},
+                   label={lst-synchro}]
+for (int index = 0; index < BS_CELL_COUNT; index++) {
+    const bs_coord cell = bs_coord_from_index(index);
+    bs_view_set_cell(controller->view, BS_PLAYER_HUMAN, cell,
+                     own_look(own, cell, show_deductions), false);
+    /* Une case marquée d'un drapeau est verrouillée : y tirer serait un coup perdu. */
+    const bool playable = player_may_fire && bs_board_cell(enemy, cell) == BS_CELL_UNKNOWN;
+    bs_view_set_cell(controller->view, BS_PLAYER_COMPUTER, cell,
+                     enemy_look(enemy, cell, over), playable);
+}
+\end{lstlisting}
+
+Tout resynchroniser peut sembler excessif quand un tir ne modifie que quelques cases. C'est
+un choix délibéré. La vue ne conserve aucun état du jeu ; elle ne peut donc pas en avoir un
+\emph{périmé}. Il n'existe pas de mise à jour partielle à oublier --- alors que la
+version~1 répétait, après chaque événement, de longues séquences de modifications de
+boutons, différentes selon le niveau. Deux cents comparaisons de classes par coup sont
+imperceptibles.
+
+\subsection{Le tour de l'ordinateur : un tir par tic}
+
+\begin{attention}
+Dans la version~1, tout le tour de l'ordinateur --- parfois une longue série de coups au
+but --- se déroulait à l'intérieur de la fonction appelée par le clic du joueur. La boucle
+d'événements étant suspendue pendant ce temps, la fenêtre ne pouvait pas se redessiner : le
+joueur voyait le résultat final d'un coup, sans les tirs intermédiaires.
+\end{attention}
+
+Le modèle exécutant un pas par appel, le contrôleur peut rendre la main à GTK entre deux
+tirs. Il arme une minuterie avec \code{g\_timeout\_add()} ; à chaque tic, l'ordinateur tire
+\emph{une} fois, la vue est resynchronisée, et la minuterie est réarmée si c'est encore à
+lui de jouer (\cref{fig-sequence}). Le joueur voit chaque tir tomber, et l'interface ne se
+fige jamais (exigence~C7).
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}[
+      acteur/.style={boite, minimum width=2.5cm, font=\sffamily\small\bfseries},
+      msg/.style={->, line width=0.6pt, draw=marine},
+      ret/.style={->, line width=0.6pt, draw=ardoise, dashed},
+      lbl/.style={font=\sffamily\scriptsize, above, inner sep=1.5pt},
+      lblb/.style={font=\sffamily\scriptsize, below, inner sep=1.5pt, text=ardoise}]
+    \node[acteur] (j) at (0,0) {Joueur};
+    \node[acteur, fill=ecume] (v) at (3.7,0) {Vue};
+    \node[acteur, fill=ecume] (c) at (7.4,0) {Contrôleur};
+    \node[acteur, coeur] (m) at (11.1,0) {Modèle};
+    \foreach \n in {j,v,c,m} \draw[ardoise!60, line width=0.5pt] (\n.south) -- ++(0,-7.9);
+
+    \draw[msg] (0,-1.0) -- node[lbl] {clic sur C4} (3.7,-1.0);
+    \draw[msg] (3.7,-1.7) -- node[lbl] {\texttt{cell\_activated(C4)}} (7.4,-1.7);
+    \draw[msg] (7.4,-2.4) -- node[lbl] {\texttt{bs\_game\_human\_fire(C4)}} (11.1,-2.4);
+    \draw[ret] (11.1,-3.1) -- node[lblb] {manqué, tour de l'ordinateur} (7.4,-3.1);
+    \draw[msg] (7.4,-3.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-3.9);
+    \draw[msg] (7.4,-4.5) to[out=0, in=0, looseness=3.5] node[right, font=\sffamily\scriptsize]
+      {minuterie 550 ms} (7.4,-5.1);
+
+    \draw[ardoise!50, dashed] (-1.3,-5.5) -- (12.4,-5.5);
+    \node[note, anchor=west, fill=white, inner sep=1.5pt] at (0.25,-5.5)
+      {plus tard, depuis la boucle d'événements};
+
+    \draw[msg] (7.4,-6.5) -- node[lbl] {\texttt{bs\_game\_computer\_fire()}} (11.1,-6.5);
+    \draw[ret] (11.1,-7.2) -- node[lblb] {touché, l'ordinateur rejoue} (7.4,-7.2);
+    \draw[msg] (7.4,-7.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-7.9);
+  \end{tikzpicture}
+  \caption{Séquence d'un tir du joueur suivi d'un tir de l'ordinateur.}
+  \label{fig-sequence}
+\end{figure}
+
+\subsection{Une fin de partie qui ne bloque pas}
+
+En fin de partie, une boîte de message propose de rejouer, de changer de niveau ou de
+quitter. Elle est affichée sans appeler \code{gtk\_dialog\_run()}, qui lance une boucle
+d'événements imbriquée : la réponse arrive par le signal \enquote{response}, comme n'importe
+quel autre événement, puis par l'intention \code{game\_over\_answered}.
+
+\begin{attention}
+Le bouton \enquote{redémarrer} de la version~1 appelait \code{gtk\_main()} depuis une
+fonction de rappel : chaque nouvelle partie empilait une boucle d'événements de plus sur
+les précédentes. La version~2 n'en a qu'une, celle de \code{GtkApplication}.
+\end{attention}
+
+\section{Deux capacités facultatives}
+
+\subsection{Le son}
+
+Les effets sonores passent par GStreamer, que toutes les machines n'ont pas. L'interface
+\fichier{audio.h} a donc \emph{deux} réalisations, dont une seule est liée au programme
+selon ce que la construction a trouvé : \fichier{audio\_gst.c} joue les sons,
+\fichier{audio\_null.c} ne fait rien. Le contrôleur appelle \code{bs\_audio\_play()} sans
+savoir laquelle il a reçue. Aucune compilation conditionnelle n'apparaît dans son code.
+
+\subsection{Une seconde interface : le terminal}
+
+Le programme \code{battleship-cli play} propose le même jeu dans un terminal
+(\cref{lst-terminal}). Il ne lie que le moteur. Ses \num{645} lignes, simulateur compris,
+constituent une seconde vue et un second contrôleur pour un modèle inchangé : c'est la
+démonstration pratique de l'exigence~C1.
+
+\begin{lstlisting}[language={}, basicstyle=\ttfamily\footnotesize,
+                   caption={Extrait d'une partie dans un terminal
+                            (\code{battleship-cli play -{}-seed 7 -{}-level hard}) : l'ordinateur
+                            touche en G4, le modèle exclut les diagonales, puis il
+                            cherche la suite du bateau.},
+                   label={lst-terminal}]
+> You fire at E5: miss
+Enemy fires at G4: hit!
+Enemy fires at H4: miss
+
+   YOUR FLEET                 ENEMY WATERS
+    A B C D E F G H I J        A B C D E F G H I J
+  1 . . S . . . S . . S      1 . . . . . . . . . .
+  2 . . . . . . . . . .      2 . . . . . . . . . .
+  3 . . . . . - . - S .      3 . . . . . . . . . .
+  4 S . . . . . X o S .      4 . . . . . . . . . .
+  5 . . . . S - S - S .      5 . . . . o o . . . .
+  6 . . . . S o . . S .      6 . . . . o . . . . .
+  7 S S S o S . . . . .      7 . . . . . . . . . .
+  8 . . . . . . . . . .      8 . . . . . . . . . .
+  9 . . . . . . S . S .      9 . . . . . . . . . .
+ 10 . . . . . . S . S .     10 . . . . . . . . . .
+
+   S ship   X hit   # sunk   o miss   - cannot hold a ship
+\end{lstlisting}

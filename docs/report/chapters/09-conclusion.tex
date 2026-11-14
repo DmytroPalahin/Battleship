@@ -1,0 +1,30 @@
+\chapter{Conclusion}
+\label{chap-conclusion}
+
+La première version de ce projet répondait à la question posée en 2023 : savons-nous
+construire une interface graphique avec GTK ? Elle y répondait bien --- le jeu était
+complet --- mais elle laissait de côté l'autre moitié du cours, celle qui parle
+d'organisation : un concept par module, une utilisation indépendante de la réalisation, une
+fonction écrite donc testée.
+
+La seconde version répond à cette autre moitié. Ce qu'elle démontre tient en trois points.
+
+\textbf{Séparer coûte peu et rapporte beaucoup.} Extraire les règles dans une bibliothèque
+sans dépendance a rendu possibles, d'un seul coup, les tests automatiques, la seconde
+interface, la mesure des stratégies et la reproductibilité. Aucune de ces quatre choses
+n'était envisageable tant qu'une case du jeu contenait l'adresse d'un bouton.
+
+\textbf{Mesurer corrige l'intuition.} Nous pensions, en 2023, que la force de l'ordinateur
+tenait à sa façon de poursuivre un bateau touché. Les mesures montrent que l'essentiel est
+ailleurs : respecter ce que la règle de non-contact prouve fait gagner trente tirs, la
+poursuite moins de huit. Les niveaux de difficulté ont été redéfinis d'après ces chiffres.
+
+\textbf{Les outils trouvent ce que l'usage cache.} La lecture hors limites du niveau
+difficile n'a jamais fait planter le jeu devant nous. Elle était pourtant là, et un outil
+standard l'aurait signalée dès le premier lancement. Vérifier automatiquement, à chaque
+modification, n'est pas un supplément de confort : c'est ce qui permet de modifier un
+programme sans craindre de le casser.
+
+Le jeu, lui, n'a pas changé. On y commande toujours la marine de Sup Galilée contre les
+pirates, sur une grille de dix cases sur dix. C'était le but : que le joueur ne voie pas la
+différence, et que le prochain développeur ne voie qu'elle.

@@ -1,0 +1,42 @@
+% ===========================================================================
+%  Bataille Navale --- rapport de projet
+%
+%  Compilation :  latexmk            (dans ce dossier)
+%  Résultat    :  build/battleship-report.pdf
+% ===========================================================================
+\documentclass[11pt, a4paper, french, oneside, parskip=half-, headings=small,
+               numbers=noenddot, bibliography=totoc, listof=totoc]{scrreprt}
+
+\input{preamble}
+
+\begin{document}
+
+\input{titlepage}
+
+\pagenumbering{roman}
+\input{chapters/00-resume}
+
+{\hypersetup{linkcolor=marine}
+\setcounter{tocdepth}{1}
+\tableofcontents}
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+\input{chapters/01-introduction}
+\input{chapters/02-exigences}
+\input{chapters/03-architecture}
+\input{chapters/04-modele}
+\input{chapters/05-adversaire}
+\input{chapters/06-interface}
+\input{chapters/07-qualite}
+\input{chapters/08-bilan}
+\input{chapters/09-conclusion}
+
+\appendix
+\input{chapters/A-utilisation}
+\input{chapters/B-captures}
+
+\printbibliography[title={Références}]
+
+\end{document}

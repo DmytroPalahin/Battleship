@@ -1,0 +1,183 @@
+% ===========================================================================
+%  Préambule : extensions, couleurs et styles du rapport
+% ===========================================================================
+
+% ------------------------------------------------------------------ langue
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[autostyle=true]{csquotes}
+
+% ----------------------------------------------------------------- polices
+\usepackage{libertinus}
+\usepackage[scaled=0.84]{sourcecodepro}
+\usepackage{microtype}
+
+% ------------------------------------------------------------- mise en page
+\usepackage[a4paper, top=2.6cm, bottom=2.8cm, left=2.7cm, right=2.7cm,
+            headheight=15pt, footskip=1.2cm]{geometry}
+\usepackage{scrlayer-scrpage}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{array, booktabs, tabularx, multirow}
+\usepackage{caption, subcaption}
+\usepackage{float}
+\usepackage[locale=FR, group-minimum-digits=4]{siunitx}
+
+% ----------------------------------------------------------------- couleurs
+\usepackage[table]{xcolor}
+\definecolor{marine}{HTML}{0B3954}    % titres, traits forts
+\definecolor{ocean}{HTML}{1098AD}     % accent
+\definecolor{ecume}{HTML}{E3FAFC}     % fonds clairs
+\definecolor{corail}{HTML}{E8590C}    % mises en garde, touches
+\definecolor{sable}{HTML}{FFF4E6}     % fond des encadrés d'alerte
+\definecolor{ardoise}{HTML}{495057}   % texte secondaire
+\definecolor{brume}{HTML}{F1F3F5}     % fond du code
+\definecolor{vert}{HTML}{2F9E44}
+
+% ------------------------------------------------------------------ dessins
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.multipart,
+                fit, calc, backgrounds, matrix, babel}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage[edges]{forest}
+\pgfplotsset{compat=1.17}
+
+% -------------------------------------------------------------------- code
+\usepackage{listings}
+\lstdefinestyle{bataille}{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{marine}\bfseries,
+  commentstyle=\color{ardoise}\itshape,
+  stringstyle=\color{corail},
+  backgroundcolor=\color{brume},
+  frame=leftline, framerule=2.5pt, rulecolor=\color{ocean},
+  framesep=8pt, xleftmargin=14pt, xrightmargin=4pt,
+  aboveskip=10pt, belowskip=8pt,
+  showstringspaces=false, columns=fullflexible, keepspaces=true,
+  breaklines=true, breakatwhitespace=true, tabsize=4,
+  captionpos=b, numbers=none,
+  literate={é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {à}{{\`a}}1 {ù}{{\`u}}1 {ç}{{\c c}}1
+           {ô}{{\^o}}1 {î}{{\^i}}1 {û}{{\^u}}1 {É}{{\'E}}1 {È}{{\`E}}1 {À}{{\`A}}1
+           {â}{{\^a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {œ}{{\oe}}1 {Ç}{{\c C}}1
+           {→}{{$\rightarrow$}}1 {×}{{$\times$}}1 {…}{{\dots}}1
+}
+\lstdefinelanguage{css}{
+  morekeywords={button, window, label},
+  morecomment=[s]{/*}{*/}, morestring=[b]", sensitive=true
+}
+\lstset{style=bataille, language=C,
+  morekeywords={bool, uint8_t, int8_t, uint32_t, uint64_t, bs_board, bs_ship, bs_coord,
+                bs_game, bs_status, bs_knowledge, bs_rng, bs_view, bs_controller,
+                bs_difficulty, bs_player, bs_cell_look, bs_turn_report, gpointer,
+                bs_phase, bs_orientation, bs_view_choice, cell_context,
+                GtkWidget, gboolean}}
+\renewcommand{\lstlistingname}{Extrait}
+\renewcommand{\lstlistlistingname}{Table des extraits de code}
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+% --------------------------------------------------------------- algorithmes
+\usepackage[french, ruled, vlined, linesnumbered]{algorithm2e}
+\SetKwComment{Com}{$\triangleright$\ }{}
+\SetCommentSty{textit}
+\SetAlFnt{\small}
+\DontPrintSemicolon
+
+% ------------------------------------------------------------------ encadrés
+\usepackage[most]{tcolorbox}
+\newtcolorbox{retenir}[1][À retenir]{
+  enhanced, colback=ecume, colframe=ocean, coltitle=white,
+  fonttitle=\sffamily\bfseries\small, title={#1},
+  boxrule=0pt, leftrule=3pt, arc=1.5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-2mm, xshift=3mm},
+  boxed title style={colback=ocean, arc=1.5pt, boxrule=0pt, left=4pt, right=4pt}
+}
+\newtcolorbox{attention}[1][Défaut de la version 1]{
+  enhanced, colback=sable, colframe=corail, coltitle=white,
+  fonttitle=\sffamily\bfseries\small, title={#1},
+  boxrule=0pt, leftrule=3pt, arc=1.5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-2mm, xshift=3mm},
+  boxed title style={colback=corail, arc=1.5pt, boxrule=0pt, left=4pt, right=4pt}
+}
+
+% ---------------------------------------------------------------- titres
+\addtokomafont{disposition}{\color{marine}}
+\setkomafont{chapter}{\Huge\sffamily\bfseries}
+\setkomafont{section}{\Large\sffamily\bfseries}
+\setkomafont{subsection}{\large\sffamily\bfseries}
+\setkomafont{caption}{\small}
+\setkomafont{captionlabel}{\small\sffamily\bfseries\color{marine}}
+\renewcommand*{\chapterformat}{%
+  \textcolor{ocean}{\thechapter}\enskip\textcolor{ocean!40}{\rule[-0.15em]{1.5pt}{1em}}\enskip}
+\RedeclareSectionCommand[beforeskip=0pt, afterskip=1.4\baselineskip]{chapter}
+
+% ------------------------------------------------------- en-têtes et pieds
+\clearpairofpagestyles
+\ihead{\small\sffamily\color{ardoise}Bataille Navale --- rapport de projet}
+\ohead{\small\sffamily\color{ardoise}\leftmark}
+\cfoot{\small\sffamily\color{ardoise}\pagemark}
+\KOMAoptions{headsepline=0.4pt}
+\setkomafont{headsepline}{\color{ocean!50}}
+\automark[chapter]{chapter}
+\renewcommand*{\chaptermarkformat}{}
+
+% ------------------------------------------------------------------- listes
+\setlist{itemsep=2pt, topsep=4pt}
+\setlist[itemize,1]{label={\tikz[baseline=-0.1ex]\fill[ocean] (0,0) -- (0.85ex,0.55ex) -- (0,1.1ex) -- cycle;}}
+\setlist[itemize,2]{label=\textcolor{ocean}{--}}
+
+% ------------------------------------------------------------ bibliographie
+% Le moteur BibTeX suffit pour une dizaine de références et évite de dépendre de biber.
+\usepackage[backend=bibtex, style=numeric, sorting=none, maxbibnames=6]{biblatex}
+\addbibresource{references.bib}
+
+% -------------------------------------------------------------------- liens
+\usepackage[colorlinks=true, linkcolor=marine, urlcolor=ocean, citecolor=ocean,
+            pdftitle={Bataille Navale --- rapport de projet},
+            pdfauthor={Dmytro Palahin, Ivanna Makam},
+            pdfsubject={Jeu de bataille navale en C11 et GTK 3},
+            pdfkeywords={C11, GTK 3, MVC, bataille navale, intégration continue}]{hyperref}
+\usepackage[french, nameinlink, noabbrev]{cleveref}
+% Les noms propres au document sont posés après ceux que cleveref installe pour le français.
+\newcommand{\nomsdesrenvois}{%
+  \crefname{lstlisting}{extrait}{extraits}\Crefname{lstlisting}{Extrait}{Extraits}%
+  \crefname{listing}{extrait}{extraits}\Crefname{listing}{Extrait}{Extraits}%
+  \crefname{algocf}{algorithme}{algorithmes}\Crefname{algocf}{Algorithme}{Algorithmes}}
+\addto\extrasfrench{\nomsdesrenvois}
+\AtBeginDocument{\nomsdesrenvois}
+
+% Les flottants restent près du texte qui les cite.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.8}
+
+% ------------------------------------------------------- raccourcis divers
+\newcommand{\vun}{\textsf{v1}}
+\newcommand{\vdeux}{\textsf{v2}}
+\newcommand{\fichier}[1]{\texttt{\small #1}}
+\newcommand{\depot}{\url{https://github.com/DmytroPalahin/Battleship}}
+\newcommand{\touche}[1]{\tikz[baseline=(k.base)]\node[draw=ardoise, rounded corners=2pt,
+  inner sep=2.5pt, font=\sffamily\scriptsize, fill=brume] (k) {#1};}
+
+% Styles communs des schémas TikZ.
+\tikzset{
+  >={Stealth[length=2.2mm]},
+  boite/.style={draw=marine, line width=0.7pt, rounded corners=3pt, fill=white,
+                align=center, font=\sffamily\small, inner sep=6pt},
+  couche/.style={boite, fill=ecume},
+  coeur/.style={boite, fill=marine, text=white, draw=marine},
+  externe/.style={boite, draw=ardoise, dashed, text=ardoise},
+  fleche/.style={->, line width=0.7pt, draw=marine},
+  note/.style={font=\sffamily\footnotesize\itshape, text=ardoise, align=center},
+}
+
+% Marque d'une case exclue par déduction, dans les figures de plateau.
+\newcommand{\drapeau}[2]{%
+  \node[font=\sffamily\bfseries\small, text=corail] at (#1+0.5,#2+0.5) {$\times$};}
+
+% Quadrillage d'un plateau de côté #1 pour les figures.
+\newcommand{\plateau}[1]{%
+  \draw[step=1, line width=0.3pt, draw=ardoise!55] (0,0) grid (#1,#1);
+  \draw[line width=0.8pt, draw=marine] (0,0) rectangle (#1,#1);}

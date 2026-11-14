@@ -1,0 +1,52 @@
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Ce rapport présente la conception et la réalisation d'un jeu de \emph{bataille navale}
+contre l'ordinateur, écrit en C11 avec la bibliothèque graphique GTK~3.
+
+Le projet est né en 2023 d'un travail en binôme pour le cours \emph{Initiation aux interfaces
+graphiques}. La première version tenait dans un unique fichier de \num{2666} lignes : le jeu
+fonctionnait, mais les règles, l'affichage et les réactions aux clics y étaient mêlés, et
+chacun des trois niveaux de difficulté était une copie du même code.
+
+La seconde version, objet de ce document, conserve le jeu et en refait les fondations. Elle
+applique jusqu'au bout l'organisation \emph{modèle / vue / contrôleur} enseignée dans le
+cours :
+
+\begin{itemize}
+  \item un \textbf{moteur de jeu} autonome, bibliothèque C11 sans aucune dépendance, sans
+        allocation dynamique et sans état global ;
+  \item \textbf{deux interfaces} pour ce même moteur, l'une graphique (GTK~3), l'autre en
+        mode terminal --- preuve que le modèle ignore réellement sa vue ;
+  \item \textbf{trois adversaires} dont la force est \emph{mesurée} sur des milliers de
+        parties reproductibles : il faut en moyenne \num{96.2}, \num{65.8} et \num{55.3}
+        tirs aux niveaux facile, moyen et difficile pour couler une flotte ;
+  \item une \textbf{chaîne de qualité} complète : 54 cas de test unitaires, des tests de
+        propriétés rejouant \num{2250} parties, un test de bout en bout de l'interface,
+        l'analyse statique et dynamique du code, l'intégration et la livraison continues.
+\end{itemize}
+
+Le rapport décrit l'architecture retenue, les structures de données et les algorithmes ---
+placement aléatoire d'une flotte, déductions tirées de la règle de non-contact, carte de
+probabilité du niveau difficile ---, puis la démarche de vérification. Il se termine par un
+bilan chiffré comparant les deux versions.
+
+\vspace{1.2em}
+\noindent\textbf{Mots-clés :} langage C, GTK, modèle-vue-contrôleur, programmation
+modulaire, intelligence artificielle de jeu, tests, intégration continue.
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+\begin{otherlanguage}{english}
+This report describes the design and implementation of a \emph{Battleship} game against the
+computer, written in C11 with the GTK~3 toolkit.
+
+The project started in 2023 as a pair assignment: a single \num{2666}-line file in which
+rules, display and event handling were intertwined. Version~2 keeps the game and rebuilds its
+foundations on a strict model / view / controller architecture: a dependency-free game engine,
+a graphical and a terminal front-end sharing it, three computer opponents whose strength is
+measured over thousands of reproducible games (\num{96.2}, \num{65.8} and \num{55.3} shots on
+average to sink a fleet), and a complete quality pipeline --- unit and property tests, an
+end-to-end interface test, static and dynamic analysis, continuous integration and delivery.
+\end{otherlanguage}
