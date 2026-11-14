@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from battleship.gresource.xml.in by CMake. Paths are relative to assets/. -->
+<gresources>
+  <gresource prefix="/io/github/dmytropalahin/battleship">
+    <file compressed="true">style.css</file>
+    <file>images/background-game.jpg</file>
+    <file>images/background-menu.jpg</file>
+    <file>images/background-rules.jpg</file>
+    <file>images/background-trailer.jpg</file>
+    <file>images/explosion.png</file>
+    <file>images/flag.png</file>
+    <file>images/miss.png</file>
+    <file>images/rocket.png</file>
+    <file>images/ship.png</file>
+    <file>images/ship-sunk-enemy.png</file>
+    <file>images/ship-sunk-player.png</file>
+    <file>images/versus.png</file>@BATTLESHIP_SOUND_RESOURCES@
+  </gresource>
+</gresources>

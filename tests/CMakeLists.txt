@@ -54,3 +54,24 @@ if(BATTLESHIP_BUILD_CLI)
       "${CMAKE_CURRENT_SOURCE_DIR}/cli_play.cmake")
   set_tests_properties(cli_play_scripted PROPERTIES LABELS "cli")
 endif()
+
+# ---------------------------------------------------------------- GUI test ---
+# Plays a full game through the real GTK widgets, with the computer on both
+# sides, then saves a screenshot. Needs a display: opt-in, run under Xvfb in CI.
+#
+# Environment of the test:
+#  - G_DEBUG=fatal-criticals    any GTK or GLib critical aborts the program;
+#  - BATTLESHIP_AUDIO_SINK      the sounds are really decoded, into a sink that
+#                               needs no sound card; a failure fails the test;
+#  - ASAN_OPTIONS               GTK and its dependencies keep caches alive until
+#                               exit, so leak detection stays on for the engine
+#                               tests only.
+if(BATTLESHIP_BUILD_GUI AND BATTLESHIP_GUI_SMOKE_TEST)
+  add_test(
+    NAME gui_smoke
+    COMMAND battleship --autoplay --seed 7 --level hard --screenshot
+            "${CMAKE_CURRENT_BINARY_DIR}/gui_smoke.png")
+  set_tests_properties(
+    gui_smoke PROPERTIES LABELS "gui" TIMEOUT 120 ENVIRONMENT
+                         "G_DEBUG=fatal-criticals;NO_AT_BRIDGE=1;BATTLESHIP_AUDIO_SINK=fakesink;ASAN_OPTIONS=detect_leaks=0")
+endif()
