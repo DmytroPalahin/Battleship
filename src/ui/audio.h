@@ -32,7 +32,10 @@ typedef struct bs_audio bs_audio;
 /** Opens the sound output, or returns NULL when sound is unavailable. */
 bs_audio *bs_audio_new(void);
 
-/** Plays a sound effect, cutting short a previous occurrence of the same one. */
+/**
+ * Plays a sound effect. It does not wait for the previous ones: occurrences
+ * overlap, and one that would add to several already sounding is dropped.
+ */
 void bs_audio_play(bs_audio *audio, bs_sound sound);
 
 /**

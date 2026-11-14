@@ -12,6 +12,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The repository is now `DmytroPalahin/battleship`, in lower case like the programs and
   packages it builds. Links in the documentation, the report and the package metadata follow;
   addresses written with the former capital letter still resolve.
+- Sound effects overlap instead of cutting each other short; at most four sound at once.
+
+### Fixed
+
+- Sound effects no longer fail when shots follow each other within milliseconds. Restarting a
+  GStreamer pipeline whose threads were still running occasionally ended in an "Internal data
+  stream error", which silenced that sound for the rest of the session and made the end-to-end
+  GUI test fail (4 times in 240 stressed runs). Every occurrence of a sound now plays on a
+  short-lived pipeline of its own that is never restarted.
+- A sound that cannot be played is reported with the name of the failing GStreamer element.
 
 ## [2.1.0] - 2026-11-14
 
