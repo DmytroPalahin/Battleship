@@ -7,6 +7,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-14
+
+### Changed
+
+- **All artwork and sounds are now original.** The third-party images and sound effects kept
+  from the 2023 version are replaced by pictures drawn with ImageMagick and sounds synthesised
+  with ffmpeg. The whole repository is now under the MIT licence, assets included.
+- The assets shrink from 1.5 MB to 0.5 MB; the release build is correspondingly smaller.
+
+### Added
+
+- `tools/generate-assets.sh` regenerates every image and sound from scratch (`make assets`).
+
 ## [2.0.0] - 2026-11-14
 
 A ground-up rewrite. The game is the same; everything underneath is new.
@@ -101,6 +114,7 @@ The original university project, by Dmytro Palahin and Ivanna Makam
 - Rules and trailer windows.
 - A variant with sound effects through GStreamer.
 
-[Unreleased]: https://github.com/DmytroPalahin/Battleship/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/DmytroPalahin/Battleship/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/DmytroPalahin/Battleship/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/DmytroPalahin/Battleship/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/DmytroPalahin/Battleship/releases/tag/v1.0.0
