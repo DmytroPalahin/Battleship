@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Battleship: a Bataille Navale game in C11 and GTK 3"
+abstract: >-
+  A complete Battleship game built on a model-view-controller architecture: a
+  dependency-free C11 game engine, a GTK 3 interface, a terminal interface and a
+  reproducible benchmark of three computer opponents.
+authors:
+  - family-names: Palahin
+    given-names: Dmytro
+  - family-names: Makam
+    given-names: Ivanna
+repository-code: "https://github.com/DmytroPalahin/Battleship"
+url: "https://github.com/DmytroPalahin/Battleship"
+license: MIT
+version: 2.0.0
+date-released: "2026-11-14"
+keywords:
+  - battleship
+  - c11
+  - gtk3
+  - model-view-controller
+  - game-ai
