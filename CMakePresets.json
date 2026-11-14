@@ -1,0 +1,88 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BATTLESHIP_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "dev",
+      "displayName": "Development",
+      "description": "Debug build of everything, warnings are errors",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Optimised build, as shipped",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "asan",
+      "displayName": "Sanitizers",
+      "description": "Debug build instrumented with AddressSanitizer and UBSan",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BATTLESHIP_ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage",
+      "description": "Engine and CLI only, instrumented for gcov",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BATTLESHIP_BUILD_GUI": "OFF",
+        "BATTLESHIP_ENABLE_COVERAGE": "ON"
+      }
+    },
+    {
+      "name": "headless",
+      "displayName": "Headless",
+      "description": "Engine, CLI and tests without GTK (servers, containers)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BATTLESHIP_BUILD_GUI": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "dev", "configurePreset": "dev" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "asan", "configurePreset": "asan" },
+    { "name": "coverage", "configurePreset": "coverage" },
+    { "name": "headless", "configurePreset": "headless" }
+  ],
+  "testPresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "output": { "outputOnFailure": true },
+      "execution": { "timeout": 300 }
+    },
+    { "name": "dev", "configurePreset": "dev", "inherits": "base" },
+    { "name": "release", "configurePreset": "release", "inherits": "base" },
+    {
+      "name": "asan",
+      "configurePreset": "asan",
+      "inherits": "base",
+      "environment": {
+        "ASAN_OPTIONS": "strict_string_checks=1:check_initialization_order=1",
+        "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+      }
+    },
+    { "name": "coverage", "configurePreset": "coverage", "inherits": "base" },
+    { "name": "headless", "configurePreset": "headless", "inherits": "base" }
+  ]
+}
