@@ -1,0 +1,199 @@
+/*
+ * Battleship - application style sheet (GTK 3 CSS).
+ *
+ * The C code never styles a widget: it only gives it a class name. What a
+ * class looks like is decided here, so the appearance of the game can be
+ * changed without recompiling a line of logic.
+ *
+ * Image paths are relative to this file inside the GResource bundle.
+ */
+
+/* ------------------------------------------------------------ backgrounds */
+
+/* Margins are CSS padding, not container borders: the background must reach
+ * the edges of the window. */
+.page-menu {
+  padding: 40px;
+  background-image: url("images/background-menu.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.page-game {
+  padding: 20px;
+  background-image: url("images/background-game.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+window.info-rules {
+  background-image: url("images/background-rules.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+window.info-trailer {
+  background-image: url("images/background-trailer.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.info-box {
+  padding: 28px;
+}
+
+/* ------------------------------------------------------------------ texts */
+
+.menu-title {
+  color: #ff9700;
+  font-size: 28px;
+  font-weight: 900;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.heading {
+  color: #ff7f50;
+  font-size: 19px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.fleet-title-own {
+  color: #fff700;
+  font-size: 20px;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.fleet-title-enemy {
+  color: #111111;
+  font-size: 20px;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.score {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.status {
+  color: #fbff00;
+  font-size: 19px;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.status.defeat {
+  color: #ffe1c4;
+}
+
+.board-header {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 20px;
+  min-height: 20px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.info-title {
+  color: #000000;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.info-text {
+  color: #000000;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.info-button,
+.control-button {
+  padding: 8px 18px;
+  font-weight: bold;
+}
+
+.level-button {
+  padding: 16px 34px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+/* The three levels shown beside the boards; the one being played is lit. */
+.level-chip {
+  padding: 7px 18px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.45);
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: bold;
+}
+
+.level-chip.active {
+  background-color: #ffffff;
+  color: #000000;
+  box-shadow: 0 0 0 2px #ff7f50;
+}
+
+/* ------------------------------------------------------------ board cells */
+
+button.cell {
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(31, 41, 51, 0.35);
+  border-radius: 0;
+  box-shadow: none;
+  background-color: #e4e7eb;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1;
+  transition: none;
+}
+
+/* A cell that can no longer be played, or that belongs to the player. */
+button.cell:disabled {
+  background-color: #cbd2d9;
+  opacity: 1;
+}
+
+button.cell.enemy.water:hover {
+  background-color: #f9fafb;
+}
+
+/* Keyboard play: the missile follows the focus across the enemy board. */
+button.cell.enemy.water:focus {
+  background-image: url("images/rocket.png");
+}
+
+button.cell.ship {
+  background-image: url("images/ship.png");
+}
+
+button.cell.miss {
+  background-image: url("images/miss.png");
+}
+
+button.cell.hit {
+  background-color: #f9fafb;
+  background-image: url("images/explosion.png");
+}
+
+button.cell.own.sunk {
+  background-image: url("images/ship-sunk-player.png");
+}
+
+button.cell.enemy.sunk {
+  background-image: url("images/ship-sunk-enemy.png");
+}
+
+button.cell.excluded {
+  background-image: url("images/flag.png");
+}
