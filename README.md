@@ -6,10 +6,10 @@
 
 **Bataille Navale — the pen-and-paper classic, in C11 and GTK 3**
 
-[![CI](https://github.com/DmytroPalahin/Battleship/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DmytroPalahin/Battleship/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/DmytroPalahin/Battleship/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/DmytroPalahin/Battleship/actions/workflows/codeql.yml)
-[![Docs](https://github.com/DmytroPalahin/Battleship/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/DmytroPalahin/Battleship/actions/workflows/docs.yml)
-[![Release](https://img.shields.io/github/v/release/DmytroPalahin/Battleship?sort=semver&color=1098ad)](https://github.com/DmytroPalahin/Battleship/releases/latest)
+[![CI](https://github.com/DmytroPalahin/battleship/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DmytroPalahin/battleship/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/DmytroPalahin/battleship/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/DmytroPalahin/battleship/actions/workflows/codeql.yml)
+[![Docs](https://github.com/DmytroPalahin/battleship/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/DmytroPalahin/battleship/actions/workflows/docs.yml)
+[![Release](https://img.shields.io/github/v/release/DmytroPalahin/battleship?sort=semver&color=1098ad)](https://github.com/DmytroPalahin/battleship/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1098ad.svg)](LICENSE)
 
 ![C11](https://img.shields.io/badge/C-11-00599C?logo=c&logoColor=white)
@@ -76,8 +76,8 @@ for the graphical interface (see [Headless build](#headless-build)).
 ### 2. Build, test, play
 
 ```bash
-git clone https://github.com/DmytroPalahin/Battleship.git
-cd Battleship
+git clone https://github.com/DmytroPalahin/battleship.git
+cd battleship
 make test     # configure, compile and run the test-suite
 make run      # start the game
 ```
@@ -252,7 +252,7 @@ GStreamer sink (`pulsesink`, `alsasink`…) to send it elsewhere.
 - 📐 [**Architecture**](docs/architecture.md) — modules, state machine, sequence of a shot
 - 🧭 [**Decision records**](docs/adr) — why it is built this way
 - 📚 **API reference** — `make docs` generates it from the public headers with Doxygen
-- 📄 [**Project report**](https://github.com/DmytroPalahin/Battleship/releases/latest/download/battleship-report.pdf)
+- 📄 [**Project report**](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report.pdf)
   — the full write-up, in French ([LaTeX sources](docs/report))
 - 📝 [**Changelog**](CHANGELOG.md)
 
@@ -260,9 +260,9 @@ GStreamer sink (`pulsesink`, `alsasink`…) to send it elsewhere.
 
 | Version                                                                       | Date | What it was                                                                    |
 | ----------------------------------------------------------------------------- | ---- | ------------------------------------------------------------------------------ |
-| [**v1.0.0**](https://github.com/DmytroPalahin/Battleship/releases/tag/v1.0.0) | 2023 | The original assignment: one C file, GTK 3, three levels. By Dmytro Palahin and Ivanna Makam |
-| [**v2.0.0**](https://github.com/DmytroPalahin/Battleship/releases/tag/v2.0.0) | 2026 | The rewrite described on this page                                             |
-| [**v2.1.0**](https://github.com/DmytroPalahin/Battleship/releases/tag/v2.1.0) | 2026 | Every image and sound redrawn: the whole repository is under one licence       |
+| [**v1.0.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v1.0.0) | 2023 | The original assignment: one C file, GTK 3, three levels. By Dmytro Palahin and Ivanna Makam |
+| [**v2.0.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v2.0.0) | 2026 | The rewrite described on this page                                             |
+| [**v2.1.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v2.1.0) | 2026 | Every image and sound redrawn: the whole repository is under one licence       |
 
 The original code is preserved under the `v1.0.0` tag. What changed, and which defects of the
 first version the rewrite removed, is listed in the [changelog](CHANGELOG.md).

@@ -11,8 +11,8 @@ authors:
     given-names: Dmytro
   - family-names: Makam
     given-names: Ivanna
-repository-code: "https://github.com/DmytroPalahin/Battleship"
-url: "https://github.com/DmytroPalahin/Battleship"
+repository-code: "https://github.com/DmytroPalahin/battleship"
+url: "https://github.com/DmytroPalahin/battleship"
 license: MIT
 version: 2.1.0
 date-released: "2026-11-14"

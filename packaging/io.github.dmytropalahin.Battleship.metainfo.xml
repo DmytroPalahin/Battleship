@@ -19,9 +19,9 @@
     </ul>
   </description>
   <launchable type="desktop-id">io.github.dmytropalahin.Battleship.desktop</launchable>
-  <url type="homepage">https://github.com/DmytroPalahin/Battleship</url>
-  <url type="bugtracker">https://github.com/DmytroPalahin/Battleship/issues</url>
-  <url type="vcs-browser">https://github.com/DmytroPalahin/Battleship</url>
+  <url type="homepage">https://github.com/DmytroPalahin/battleship</url>
+  <url type="bugtracker">https://github.com/DmytroPalahin/battleship/issues</url>
+  <url type="vcs-browser">https://github.com/DmytroPalahin/battleship</url>
   <developer id="io.github.dmytropalahin">
     <name>Dmytro Palahin</name>
   </developer>

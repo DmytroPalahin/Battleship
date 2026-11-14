@@ -4,7 +4,7 @@ project(
   battleship
   VERSION 2.1.0
   DESCRIPTION "Battleship (Bataille Navale) in C11 and GTK 3"
-  HOMEPAGE_URL "https://github.com/DmytroPalahin/Battleship"
+  HOMEPAGE_URL "https://github.com/DmytroPalahin/battleship"
   LANGUAGES C)
 
 # ---------------------------------------------------------------- options ---

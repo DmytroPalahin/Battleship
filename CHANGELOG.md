@@ -7,6 +7,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The repository is now `DmytroPalahin/battleship`, in lower case like the programs and
+  packages it builds. Links in the documentation, the report and the package metadata follow;
+  addresses written with the former capital letter still resolve.
+
 ## [2.1.0] - 2026-11-14
 
 ### Changed
@@ -114,7 +120,7 @@ The original university project, by Dmytro Palahin and Ivanna Makam
 - Rules and trailer windows.
 - A variant with sound effects through GStreamer.
 
-[Unreleased]: https://github.com/DmytroPalahin/Battleship/compare/v2.1.0...HEAD
-[2.1.0]: https://github.com/DmytroPalahin/Battleship/compare/v2.0.0...v2.1.0
-[2.0.0]: https://github.com/DmytroPalahin/Battleship/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/DmytroPalahin/Battleship/releases/tag/v1.0.0
+[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/DmytroPalahin/battleship/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/DmytroPalahin/battleship/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/DmytroPalahin/battleship/releases/tag/v1.0.0
