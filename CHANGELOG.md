@@ -12,6 +12,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `make coverage` and `make docs` name the tool that is missing (gcovr, Doxygen) before doing
   anything else. `make docs` used to configure the build tree first, which left that tree
   unable to configure again, for `make build` and `make test` too, until Doxygen was installed.
+- `make coverage` measures one run of the tests. The counters of earlier runs were added to
+  the new ones, and from the fourth run on gcovr refused a line counted more than 2^32 times.
 - The report builds without its two spurious warnings: a request to run BibTeX again, reported
   as undefined references although the bibliography was up to date, and a duplicate link
   target on the cover page.

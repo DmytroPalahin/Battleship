@@ -64,8 +64,11 @@ lint: build ## Static analysis with clang-tidy and cppcheck
 asan: ## Build and test under AddressSanitizer and UBSan
 	$(MAKE) test PRESET=asan
 
+# The counters of earlier runs are deleted first: they add up in the .gcda files,
+# and gcovr rejects a line counted more than 2^32 times, which four runs reach.
 coverage: ## Test coverage of the engine (needs gcovr)
 	@test -n "$(GCOVR)" || { echo "make coverage: gcovr not found (macOS: brew install gcovr; Debian: apt install gcovr)" >&2; exit 1; }
+	@if [ -d build/coverage ]; then find build/coverage -name '*.gcda' -delete; fi
 	$(MAKE) test PRESET=coverage
 	$(GCOVR) --root . --filter src/core --filter include build/coverage --print-summary \
 		--fail-under-line 95
