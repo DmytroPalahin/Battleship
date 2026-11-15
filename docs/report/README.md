@@ -10,6 +10,10 @@ The report of the project, written with LaTeX, in two editions:
 The English edition is the translation of the French one, chapter for chapter and with the
 same labels, so that a change to one is easy to carry over to the other.
 
+The PDFs of the latest release:
+[English](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report-en.pdf),
+[French](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report-fr.pdf).
+
 ```bash
 make report                  # from the repository root
 # or

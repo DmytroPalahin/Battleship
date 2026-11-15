@@ -253,8 +253,11 @@ GStreamer sink (`pulsesink`, `alsasink`…) to send it elsewhere.
 - 🧭 [**Decision records**](docs/adr) — why it is built this way
 - 📚 **API reference** — `make docs` generates it from the public headers with Doxygen
 - 📄 [**Project report**](docs/report) — the full write-up, in two editions built from the
-  same LaTeX sources: [English](docs/report/en) and [French](docs/report/fr), the original.
-  The PDFs are attached to [each release](https://github.com/DmytroPalahin/battleship/releases/latest).
+  same LaTeX sources. Read the PDF in
+  [English](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report-en.pdf)
+  or in
+  [French](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report-fr.pdf),
+  the original.
 - 📝 [**Changelog**](CHANGELOG.md)
 
 ## History
@@ -264,6 +267,7 @@ GStreamer sink (`pulsesink`, `alsasink`…) to send it elsewhere.
 | [**v1.0.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v1.0.0) | 2023 | The original assignment: one C file, GTK 3, three levels. By Dmytro Palahin and Ivanna Makam |
 | [**v2.0.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v2.0.0) | 2026 | The rewrite described on this page                                             |
 | [**v2.1.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v2.1.0) | 2026 | Every image and sound redrawn: the whole repository is under one licence       |
+| [**v2.2.0**](https://github.com/DmytroPalahin/battleship/releases/tag/v2.2.0) | 2026 | The project report in two editions, French and English                         |
 
 The original code is preserved under the `v1.0.0` tag. What changed, and which defects of the
 first version the rewrite removed, is listed in the [changelog](CHANGELOG.md).

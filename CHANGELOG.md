@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-15
+
 ### Added
 
 - **English edition of the project report.** The report now exists in two editions built from
@@ -153,7 +155,8 @@ The original university project, by Dmytro Palahin and Ivanna Makam
 - Rules and trailer windows.
 - A variant with sound effects through GStreamer.
 
-[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/DmytroPalahin/battleship/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/DmytroPalahin/battleship/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/DmytroPalahin/battleship/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/DmytroPalahin/battleship/compare/v1.0.0...v2.0.0
