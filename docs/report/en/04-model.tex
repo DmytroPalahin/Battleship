@@ -51,14 +51,14 @@ put on a button.
     \centering
     \begin{tabularx}{\textwidth}{@{}lX@{}}
         \toprule
-        \textbf{State}            & \textbf{Meaning for the attacker}                   \\
+        \textbf{State}            & \textbf{Meaning for the attacker}              \\
         \midrule
-        \code{BS\_CELL\_UNKNOWN}  & Never fired at, nothing is known.                   \\
-        \code{BS\_CELL\_MISS}     & Fired at: water.                                    \\
-        \code{BS\_CELL\_HIT}      & Fired at: deck of a ship that is still afloat.      \\
-        \code{BS\_CELL\_SUNK}     & Fired at: deck of a sunk ship.                      \\
+        \code{BS\_CELL\_UNKNOWN}  & Never fired at, nothing is known.              \\
+        \code{BS\_CELL\_MISS}     & Fired at: water.                               \\
+        \code{BS\_CELL\_HIT}      & Fired at: deck of a ship that is still afloat. \\
+        \code{BS\_CELL\_SUNK}     & Fired at: deck of a sunk ship.                 \\
         \code{BS\_CELL\_EXCLUDED} & Not fired at, but \emph{proved} empty by the
-        no-contact rule.                                                                \\
+        no-contact rule.                                                           \\
         \bottomrule
     \end{tabularx}
     \caption{Public states of a cell.}

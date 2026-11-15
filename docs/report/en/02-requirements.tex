@@ -77,15 +77,15 @@ artificial opponent depends first of all on the use it makes of these deductions
     \centering
     \begin{tabularx}{\textwidth}{@{}lX@{}}
         \toprule
-        \textbf{F1} & Play a complete game against the computer, by the rules above.               \\
-        \textbf{F2} & Choose among three difficulty levels: easy, medium, hard.                    \\
-        \textbf{F3} & Place the fleets at random; redraw the player's before the first shot.       \\
+        \textbf{F1} & Play a complete game against the computer, by the rules above.          \\
+        \textbf{F2} & Choose among three difficulty levels: easy, medium, hard.               \\
+        \textbf{F3} & Place the fleets at random; redraw the player's before the first shot.  \\
         \textbf{F4} & Display the state of both grids: the player's ships, misses, hits, sunk
-        ships, cells excluded by deduction.                                                        \\
-        \textbf{F5} & Display the score of each side and whose turn it is.                         \\
-        \textbf{F6} & Consult the rules and the presentation of the game at any time.              \\
-        \textbf{F7} & At the end of a game, offer to play again, change level or quit.             \\
-        \textbf{F8} & Play with the keyboard as well as the mouse; optional sound effects.         \\
+        ships, cells excluded by deduction.                                                   \\
+        \textbf{F5} & Display the score of each side and whose turn it is.                    \\
+        \textbf{F6} & Consult the rules and the presentation of the game at any time.         \\
+        \textbf{F7} & At the end of a game, offer to play again, change level or quit.        \\
+        \textbf{F8} & Play with the keyboard as well as the mouse; optional sound effects.    \\
         \bottomrule
     \end{tabularx}
     \caption{Functional requirements.}
@@ -101,21 +101,21 @@ These are what set version~2 apart from the first. Each of them can be verified,
     \centering
     \begin{tabularx}{\textwidth}{@{}lXl@{}}
         \toprule
-                    & \textbf{Requirement}                                                     & \textbf{Verified by} \\
+                    & \textbf{Requirement}                                             & \textbf{Verified by} \\
         \midrule
-        \textbf{C1} & The model depends neither on GTK nor on any other library.               &
-        build without GTK                                                                                             \\
-        \textbf{C2} & One seed replays exactly the same game, on every platform.               &
-        reference file                                                                                                \\
-        \textbf{C3} & The opponent cannot cheat: it does not know where the ships are.         &
-        construction (types)                                                                                          \\
-        \textbf{C4} & A refused operation leaves the state of the game untouched.              & unit tests           \\
-        \textbf{C5} & No compiler warning; no memory error.                                    &
-        \code{-Werror}, ASan, UBSan                                                                                   \\
-        \textbf{C6} & The program starts from any folder.                                      &
-        embedded resources                                                                                            \\
-        \textbf{C7} & The interface never freezes during the computer's turn.                  &
-        one shot per clock tick                                                                                       \\
+        \textbf{C1} & The model depends neither on GTK nor on any other library.       &
+        build without GTK                                                                                     \\
+        \textbf{C2} & One seed replays exactly the same game, on every platform.       &
+        reference file                                                                                        \\
+        \textbf{C3} & The opponent cannot cheat: it does not know where the ships are. &
+        construction (types)                                                                                  \\
+        \textbf{C4} & A refused operation leaves the state of the game untouched.      & unit tests           \\
+        \textbf{C5} & No compiler warning; no memory error.                            &
+        \code{-Werror}, ASan, UBSan                                                                           \\
+        \textbf{C6} & The program starts from any folder.                              &
+        embedded resources                                                                                    \\
+        \textbf{C7} & The interface never freezes during the computer's turn.          &
+        one shot per clock tick                                                                               \\
         \bottomrule
     \end{tabularx}
     \caption{Design requirements and means of verification.}

@@ -36,16 +36,16 @@ itself, or used to advise the player.
     \centering
     \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xccc@{}}
         \toprule
-        \textbf{Level}                       & \textbf{Strategy}                                                      &
-        \rotatebox{60}{\small never repeats} & \rotatebox{60}{\small deduces}                                         &
-        \rotatebox{60}{\small finishes, anticipates}                                                                              \\
+        \textbf{Level}                       & \textbf{Strategy}                                                     &
+        \rotatebox{60}{\small never repeats} & \rotatebox{60}{\small deduces}                                        &
+        \rotatebox{60}{\small finishes, anticipates}                                                                             \\
         \midrule
-        Easy                                 & Fires at random among the cells not yet fired at.                      &
-        $\bullet$                            &                                                                        &           \\
-        Medium                               & Fires at random, but never at a cell that the rules prove empty.       &
-        $\bullet$                            & $\bullet$                                                              &           \\
-        Hard                                 & Finishes off wounded ships; when hunting, aims at the likeliest cell.  &
-        $\bullet$                            & $\bullet$                                                              & $\bullet$ \\
+        Easy                                 & Fires at random among the cells not yet fired at.                     &
+        $\bullet$                            &                                                                       &           \\
+        Medium                               & Fires at random, but never at a cell that the rules prove empty.      &
+        $\bullet$                            & $\bullet$                                                             &           \\
+        Hard                                 & Finishes off wounded ships; when hunting, aims at the likeliest cell. &
+        $\bullet$                            & $\bullet$                                                             & $\bullet$ \\
         \bottomrule
     \end{tabularx}
     \caption{The three levels of the opponent.}
@@ -194,12 +194,12 @@ alternating the sides does neutralise the advantage of the first shot.
     \begin{tabular}{@{}l S[table-format=2.2] S[table-format=1.2] S[table-format=2.0]
             S[table-format=2.0] S[table-format=3.0] S[table-format=3.0]@{}}
         \toprule
-        \textbf{Level}     & {\textbf{Mean}}                         & {\textbf{Std dev.}} & {\textbf{Min.}} &
-        {\textbf{Median}}  & {\textbf{9\textsuperscript{th} decile}} & {\textbf{Max.}}                                        \\
+        \textbf{Level}    & {\textbf{Mean}}                         & {\textbf{Std dev.}} & {\textbf{Min.}} &
+        {\textbf{Median}} & {\textbf{9\textsuperscript{th} decile}} & {\textbf{Max.}}                                        \\
         \midrule
-        Easy               & 96.19                                   & 4.10                & 69              & 97 & 100 & 100 \\
-        Medium             & 65.83                                   & 6.07                & 44              & 66 & 74  & 85  \\
-        Hard               & 55.27                                   & 6.80                & 28              & 56 & 64  & 79  \\
+        Easy              & 96.19                                   & 4.10                & 69              & 97 & 100 & 100 \\
+        Medium            & 65.83                                   & 6.07                & 44              & 66 & 74  & 85  \\
+        Hard              & 55.27                                   & 6.80                & 28              & 56 & 64  & 79  \\
         \bottomrule
     \end{tabular}
     \caption{Number of shots needed to sink a random fleet (\num{10000} games per level).}
@@ -267,12 +267,12 @@ strategies were measured during development (\cref{tab-candidats}).
     \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X S[table-format=2.1]
             S[table-format=+2.1] l@{}}
         \toprule
-        \textbf{Strategy}                               & {\textbf{Shots}} & {\textbf{Gain}} & \textbf{Kept as} \\
+        \textbf{Strategy}                              & {\textbf{Shots}} & {\textbf{Gain}} & \textbf{Kept as} \\
         \midrule
-        A. Pure chance                                  & 96.2             &                 & Easy             \\
-        B. A + respect for the deductions               & 65.8             & -30.4           & Medium           \\
-        C. B + classic pursuit of hit ships             & 58.2             & -7.6            & ---              \\
-        D. B + density map (hunting and finishing off)  & 55.3             & -2.9            & Hard             \\
+        A. Pure chance                                 & 96.2             &                 & Easy             \\
+        B. A + respect for the deductions              & 65.8             & -30.4           & Medium           \\
+        C. B + classic pursuit of hit ships            & 58.2             & -7.6            & ---              \\
+        D. B + density map (hunting and finishing off) & 55.3             & -2.9            & Hard             \\
         \bottomrule
     \end{tabularx}
     \caption{Candidate strategies. The gain is expressed relative to the previous row;

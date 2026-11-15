@@ -139,16 +139,16 @@ tests is measured on the engine (\cref{tab-couverture}); the build fails if it d
     \centering
     \begin{tabular}{@{}l S[table-format=3.0] S[table-format=3.2] l@{}}
         \toprule
-        \textbf{File}      & {\textbf{Lines}}  & {\textbf{Covered (\si{\percent})}}   &
-        \textbf{Lines not covered}                                                                                    \\
+        \textbf{File}      & {\textbf{Lines}} & {\textbf{Covered (\si{\percent})}} &
+        \textbf{Lines not covered}                                                                                 \\
         \midrule
-        \fichier{ai.c}     & 130               & 100.00                               &                               \\
-        \fichier{board.c}  & 186               & 97.85                                & placement dead end            \\
-        \fichier{common.c} & 14                & 100.00                               &                               \\
-        \fichier{game.c}   & 101               & 98.02                                & placement failure, propagated \\
-        \fichier{rng.c}    & 40                & 100.00                               &                               \\
+        \fichier{ai.c}     & 130              & 100.00                             &                               \\
+        \fichier{board.c}  & 186              & 97.85                              & placement dead end            \\
+        \fichier{common.c} & 14               & 100.00                             &                               \\
+        \fichier{game.c}   & 101              & 98.02                              & placement failure, propagated \\
+        \fichier{rng.c}    & 40               & 100.00                             &                               \\
         \midrule
-        \textbf{Engine}    & {\bfseries 471}   & {\bfseries 98.73}                    &                               \\
+        \textbf{Engine}    & {\bfseries 471}  & {\bfseries 98.73}                  &                               \\
         \bottomrule
     \end{tabular}
     \caption{Line coverage of the engine by its tests. The six lines not covered all handle

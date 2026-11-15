@@ -64,20 +64,20 @@ implements them.
     \centering
     \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
         \toprule
-                            & \textbf{Role (course)}                                                 & \textbf{Implementation (project)} \\
+                            & \textbf{Role (course)}                                              & \textbf{Implementation (project)} \\
         \midrule
         \textbf{Model}      & User types and the functions that manipulate them: the game and its
         rules.              &
         \fichier{include/battleship/}, \fichier{src/core/} --- board, shots, deductions,
-        turns, opponent.                                                                                                                 \\
+        turns, opponent.                                                                                                              \\
         \addlinespace
-        \textbf{View}       & Graphical components to be arranged in windows.                        &
+        \textbf{View}       & Graphical components to be arranged in windows.                     &
         \fichier{src/ui/view.c} --- all the \emph{widgets}, no rule;
-        \fichier{assets/style.css} for the appearance.                                                                                   \\
+        \fichier{assets/style.css} for the appearance.                                                                                \\
         \addlinespace
-        \textbf{Controller} & Conductor: associates actions with events, synchronises the view.      &
+        \textbf{Controller} & Conductor: associates actions with events, synchronises the view.   &
         \fichier{src/ui/controller.c} --- asks the model to play, then resynchronises the
-        view.                                                                                                                            \\
+        view.                                                                                                                         \\
         \bottomrule
     \end{tabularx}
     \caption{Correspondence between the organisation of the course and that of the project.}
@@ -166,16 +166,16 @@ structure, instructions for use, preconditions --- and a source file that implem
     \small
     \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xr@{}}
         \toprule
-        \textbf{Folder}                                    & \textbf{Content}                                           & \textbf{Lines} \\
+        \textbf{Folder}                                    & \textbf{Content}                                         & \textbf{Lines} \\
         \midrule
-        \fichier{include/battleship/}, \fichier{src/core/} & Game engine: public interface and implementation           & \num{1343}     \\
-        \fichier{src/cli/}                                 & Terminal interface and simulator                           & \num{645}      \\
-        \fichier{src/ui/}                                  & GTK application: view, controller, shell, sound            & \num{1670}     \\
-        \fichier{assets/}                                  & Images, sounds, style sheet (embedded in the executable)   & \num{199}      \\
-        \fichier{tests/}                                   & Unit, property and terminal interface tests                & \num{1582}     \\
-        \fichier{docs/}                                    & Architecture guide, decisions, this report                 &                \\
-        \fichier{cmake/}, \fichier{packaging/}             & Build modules, desktop integration                         &                \\
-        \fichier{.github/}                                 & Continuous integration and delivery                        &                \\
+        \fichier{include/battleship/}, \fichier{src/core/} & Game engine: public interface and implementation         & \num{1343}     \\
+        \fichier{src/cli/}                                 & Terminal interface and simulator                         & \num{645}      \\
+        \fichier{src/ui/}                                  & GTK application: view, controller, shell, sound          & \num{1670}     \\
+        \fichier{assets/}                                  & Images, sounds, style sheet (embedded in the executable) & \num{199}      \\
+        \fichier{tests/}                                   & Unit, property and terminal interface tests              & \num{1582}     \\
+        \fichier{docs/}                                    & Architecture guide, decisions, this report               &                \\
+        \fichier{cmake/}, \fichier{packaging/}             & Build modules, desktop integration                       &                \\
+        \fichier{.github/}                                 & Continuous integration and delivery                      &                \\
         \bottomrule
     \end{tabularx}
     \caption{Organisation of the repository. The lines count the code and its comments; for
