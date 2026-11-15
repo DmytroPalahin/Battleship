@@ -8,61 +8,61 @@ pirates dirigée par l'ordinateur. Chaque camp dispose d'une grille de $10 \time
 d'une flotte de dix bateaux, soit vingt cases occupées (\cref{tab-flotte}).
 
 \begin{table}[ht]
-  \centering
-  \begin{tabular}{@{}lccc@{}}
-    \toprule
-    Type de bateau & Longueur (cases) & Nombre & Cases occupées \\
-    \midrule
-    Quatre ponts & 4 & 1 & 4 \\
-    Trois ponts  & 3 & 2 & 6 \\
-    Deux ponts   & 2 & 3 & 6 \\
-    Un pont      & 1 & 4 & 4 \\
-    \midrule
-    \textbf{Flotte} & & \textbf{10} & \textbf{20} \\
-    \bottomrule
-  \end{tabular}
-  \caption{Composition d'une flotte.}
-  \label{tab-flotte}
+    \centering
+    \begin{tabular}{@{}lccc@{}}
+        \toprule
+        Type de bateau  & Longueur (cases) & Nombre      & Cases occupées \\
+        \midrule
+        Quatre ponts    & 4                & 1           & 4              \\
+        Trois ponts     & 3                & 2           & 6              \\
+        Deux ponts      & 2                & 3           & 6              \\
+        Un pont         & 1                & 4           & 4              \\
+        \midrule
+        \textbf{Flotte} &                  & \textbf{10} & \textbf{20}    \\
+        \bottomrule
+    \end{tabular}
+    \caption{Composition d'une flotte.}
+    \label{tab-flotte}
 \end{table}
 
 \begin{description}[style=nextline, leftmargin=1.2em]
-  \item[Placement] Les bateaux sont droits, horizontaux ou verticaux. Deux bateaux ne se
-    touchent jamais, \emph{ni par un côté, ni par un coin} : chaque bateau est entouré d'une
-    ceinture d'eau (\cref{fig-non-contact}). Les flottes sont placées au hasard ; le joueur
-    peut faire retirer la sienne tant qu'aucun coup n'a été tiré.
-  \item[Tour de jeu] Le joueur commence. Tirer consiste à désigner une case de la grille
-    adverse. Si un bateau s'y trouve, il est \emph{touché} et le tireur rejoue ; sinon le
-    tir est \emph{manqué} et la main passe.
-  \item[Bateau coulé] Un bateau dont toutes les cases sont touchées est \emph{coulé}.
-  \item[Fin de partie] Le premier camp dont la flotte entière est coulée a perdu.
+    \item[Placement] Les bateaux sont droits, horizontaux ou verticaux. Deux bateaux ne se
+          touchent jamais, \emph{ni par un côté, ni par un coin} : chaque bateau est entouré d'une
+          ceinture d'eau (\cref{fig-non-contact}). Les flottes sont placées au hasard ; le joueur
+          peut faire retirer la sienne tant qu'aucun coup n'a été tiré.
+    \item[Tour de jeu] Le joueur commence. Tirer consiste à désigner une case de la grille
+          adverse. Si un bateau s'y trouve, il est \emph{touché} et le tireur rejoue ; sinon le
+          tir est \emph{manqué} et la main passe.
+    \item[Bateau coulé] Un bateau dont toutes les cases sont touchées est \emph{coulé}.
+    \item[Fin de partie] Le premier camp dont la flotte entière est coulée a perdu.
 \end{description}
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[scale=0.62]
-    % ------------------------------------------------ (a) placement licite
-    \begin{scope}
-      \fill[ecume] (1,2) rectangle (6,5);
-      \plateau{7}
-      \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
-      \fill[ocean, rounded corners=1.5pt] (6.12,0.12) rectangle (6.88,1.88);
-      \fill[ocean, rounded corners=1.5pt] (0.12,6.12) rectangle (1.88,6.88);
-      \node[note] at (3.5,-0.8) {(a) ceinture d'eau d'un bateau\\et voisins licites};
-    \end{scope}
-    % ---------------------------------------------- (b) placements interdits
-    \begin{scope}[xshift=9.5cm]
-      \plateau{7}
-      \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
-      \fill[corail, rounded corners=1.5pt] (5.12,4.12) rectangle (5.88,5.88);
-      \fill[corail, rounded corners=1.5pt] (1.12,2.12) rectangle (3.88,2.88);
-      \draw[corail, line width=1.2pt] (4.75,3.75) -- (5.25,4.25) (4.75,4.25) -- (5.25,3.75);
-      \draw[corail, line width=1.2pt] (2.75,2.75) -- (3.25,3.25) (2.75,3.25) -- (3.25,2.75);
-      \node[note] at (3.5,-0.8) {(b) contact par un coin\\et contact par un côté};
-    \end{scope}
-  \end{tikzpicture}
-  \caption{La règle de non-contact. En (a), la zone claire est interdite aux autres
-           bateaux ; en (b), deux placements refusés.}
-  \label{fig-non-contact}
+    \centering
+    \begin{tikzpicture}[scale=0.62]
+        % ------------------------------------------------ (a) placement licite
+        \begin{scope}
+            \fill[ecume] (1,2) rectangle (6,5);
+            \plateau{7}
+            \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+            \fill[ocean, rounded corners=1.5pt] (6.12,0.12) rectangle (6.88,1.88);
+            \fill[ocean, rounded corners=1.5pt] (0.12,6.12) rectangle (1.88,6.88);
+            \node[note] at (3.5,-0.8) {(a) ceinture d'eau d'un bateau\\et voisins licites};
+        \end{scope}
+        % ---------------------------------------------- (b) placements interdits
+        \begin{scope}[xshift=9.5cm]
+            \plateau{7}
+            \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+            \fill[corail, rounded corners=1.5pt] (5.12,4.12) rectangle (5.88,5.88);
+            \fill[corail, rounded corners=1.5pt] (1.12,2.12) rectangle (3.88,2.88);
+            \draw[corail, line width=1.2pt] (4.75,3.75) -- (5.25,4.25) (4.75,4.25) -- (5.25,3.75);
+            \draw[corail, line width=1.2pt] (2.75,2.75) -- (3.25,3.25) (2.75,3.25) -- (3.25,2.75);
+            \node[note] at (3.5,-0.8) {(b) contact par un coin\\et contact par un côté};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{La règle de non-contact. En (a), la zone claire est interdite aux autres
+        bateaux ; en (b), deux placements refusés.}
+    \label{fig-non-contact}
 \end{figure}
 
 La règle de non-contact a une conséquence qui structure tout le projet : elle permet de
@@ -74,22 +74,22 @@ déductions (\cref{chap-adversaire}).
 \section{Exigences fonctionnelles}
 
 \begin{table}[ht]
-  \centering
-  \begin{tabularx}{\textwidth}{@{}lX@{}}
-    \toprule
-    \textbf{F1} & Jouer une partie complète contre l'ordinateur, selon les règles ci-dessus. \\
-    \textbf{F2} & Choisir parmi trois niveaux de difficulté : facile, moyen, difficile. \\
-    \textbf{F3} & Placer les flottes au hasard ; retirer celle du joueur avant le premier tir. \\
-    \textbf{F4} & Afficher l'état des deux grilles : bateaux du joueur, tirs manqués, coups
-                  au but, bateaux coulés, cases exclues par déduction. \\
-    \textbf{F5} & Afficher le score de chaque camp et le tour en cours. \\
-    \textbf{F6} & Consulter les règles et la présentation du jeu à tout moment. \\
-    \textbf{F7} & En fin de partie, proposer de rejouer, de changer de niveau ou de quitter. \\
-    \textbf{F8} & Jouer au clavier comme à la souris ; effets sonores facultatifs. \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Exigences fonctionnelles.}
-  \label{tab-fonctionnelles}
+    \centering
+    \begin{tabularx}{\textwidth}{@{}lX@{}}
+        \toprule
+        \textbf{F1} & Jouer une partie complète contre l'ordinateur, selon les règles ci-dessus.   \\
+        \textbf{F2} & Choisir parmi trois niveaux de difficulté : facile, moyen, difficile.        \\
+        \textbf{F3} & Placer les flottes au hasard ; retirer celle du joueur avant le premier tir. \\
+        \textbf{F4} & Afficher l'état des deux grilles : bateaux du joueur, tirs manqués, coups
+        au but, bateaux coulés, cases exclues par déduction.                                       \\
+        \textbf{F5} & Afficher le score de chaque camp et le tour en cours.                        \\
+        \textbf{F6} & Consulter les règles et la présentation du jeu à tout moment.                \\
+        \textbf{F7} & En fin de partie, proposer de rejouer, de changer de niveau ou de quitter.   \\
+        \textbf{F8} & Jouer au clavier comme à la souris ; effets sonores facultatifs.             \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Exigences fonctionnelles.}
+    \label{tab-fonctionnelles}
 \end{table}
 
 \section{Exigences de conception}
@@ -98,26 +98,26 @@ Ce sont elles qui distinguent la version~2 de la première. Chacune est vérifia
 \cref{chap-qualite} montre par quel moyen elle l'est effectivement.
 
 \begin{table}[ht]
-  \centering
-  \begin{tabularx}{\textwidth}{@{}lXl@{}}
-    \toprule
-    & \textbf{Exigence} & \textbf{Vérifiée par} \\
-    \midrule
-    \textbf{C1} & Le modèle ne dépend ni de GTK ni d'aucune autre bibliothèque. &
-                  compilation sans GTK \\
-    \textbf{C2} & Une même graine rejoue exactement la même partie, sur toute plate-forme. &
-                  fichier de référence \\
-    \textbf{C3} & L'adversaire ne peut pas tricher : il ignore la position des bateaux. &
-                  construction (types) \\
-    \textbf{C4} & Une opération refusée laisse l'état du jeu intact. & tests unitaires \\
-    \textbf{C5} & Aucun avertissement du compilateur ; aucune erreur mémoire. &
-                  \code{-Werror}, ASan, UBSan \\
-    \textbf{C6} & Le programme se lance depuis n'importe quel dossier. &
-                  ressources incorporées \\
-    \textbf{C7} & L'interface ne se fige jamais pendant le tour de l'ordinateur. &
-                  un tir par tic d'horloge \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Exigences de conception et moyens de vérification.}
-  \label{tab-conception}
+    \centering
+    \begin{tabularx}{\textwidth}{@{}lXl@{}}
+        \toprule
+                    & \textbf{Exigence}                                                        & \textbf{Vérifiée par} \\
+        \midrule
+        \textbf{C1} & Le modèle ne dépend ni de GTK ni d'aucune autre bibliothèque.            &
+        compilation sans GTK                                                                                           \\
+        \textbf{C2} & Une même graine rejoue exactement la même partie, sur toute plate-forme. &
+        fichier de référence                                                                                           \\
+        \textbf{C3} & L'adversaire ne peut pas tricher : il ignore la position des bateaux.    &
+        construction (types)                                                                                           \\
+        \textbf{C4} & Une opération refusée laisse l'état du jeu intact.                       & tests unitaires       \\
+        \textbf{C5} & Aucun avertissement du compilateur ; aucune erreur mémoire.              &
+        \code{-Werror}, ASan, UBSan                                                                                    \\
+        \textbf{C6} & Le programme se lance depuis n'importe quel dossier.                     &
+        ressources incorporées                                                                                         \\
+        \textbf{C7} & L'interface ne se fige jamais pendant le tour de l'ordinateur.           &
+        un tir par tic d'horloge                                                                                       \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Exigences de conception et moyens de vérification.}
+    \label{tab-conception}
 \end{table}

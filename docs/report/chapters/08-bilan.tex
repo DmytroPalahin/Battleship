@@ -4,34 +4,34 @@
 \section{Les deux versions en chiffres}
 
 \begin{table}[ht]
-  \centering
-  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X r r@{}}
-    \toprule
-    & \textbf{Version 1 (2023)} & \textbf{Version 2 (2026)} \\
-    \midrule
-    Fichiers source (\fichier{.c})              & 1            & 14 \\
-    Lignes du plus long fichier                 & \num{2666}   & \num{617} \\
-    Fonctions                                   & 36           & 151 \\
-    Longueur moyenne d'une fonction (lignes)    & 67           & 13 \\
-    Plus longue fonction (lignes)               & 420          & 77 \\
-    Variables globales modifiables              & 7            & 0 \\
-    Copies de la logique d'un tour de jeu       & 3            & 1 \\
-    Fournisseurs de style créés par le code     & 27           & 1 \\
-    Boucles d'événements (\code{gtk\_main})     & 5 appels     & 1 \\
-    \addlinespace
-    Cas de test automatiques                    & 0            & 54 \\
-    Parties jouées par la suite de tests        & 0            & plus de \num{6000} \\
-    Couverture du moteur                        & ---          & \SI{98.7}{\percent} \\
-    Compilateurs vérifiés en continu            & 0            & 3 \\
-    Avertissements activés                      & \code{-Wall} & 14 options, bloquants \\
-    \addlinespace
-    Interfaces                                  & 1            & 2 \\
-    Lancement hors du dossier du programme      & non          & oui \\
-    Partie rejouable par une graine             & non          & oui \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Comparaison chiffrée des deux versions.}
-  \label{tab-comparaison}
+    \centering
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X r r@{}}
+        \toprule
+                                                 & \textbf{Version 1 (2023)} & \textbf{Version 2 (2026)} \\
+        \midrule
+        Fichiers source (\fichier{.c})           & 1                         & 14                        \\
+        Lignes du plus long fichier              & \num{2666}                & \num{617}                 \\
+        Fonctions                                & 36                        & 151                       \\
+        Longueur moyenne d'une fonction (lignes) & 67                        & 13                        \\
+        Plus longue fonction (lignes)            & 420                       & 77                        \\
+        Variables globales modifiables           & 7                         & 0                         \\
+        Copies de la logique d'un tour de jeu    & 3                         & 1                         \\
+        Fournisseurs de style créés par le code  & 27                        & 1                         \\
+        Boucles d'événements (\code{gtk\_main})  & 5 appels                  & 1                         \\
+        \addlinespace
+        Cas de test automatiques                 & 0                         & 54                        \\
+        Parties jouées par la suite de tests     & 0                         & plus de \num{6000}        \\
+        Couverture du moteur                     & ---                       & \SI{98.7}{\percent}       \\
+        Compilateurs vérifiés en continu         & 0                         & 3                         \\
+        Avertissements activés                   & \code{-Wall}              & 14 options, bloquants     \\
+        \addlinespace
+        Interfaces                               & 1                         & 2                         \\
+        Lancement hors du dossier du programme   & non                       & oui                       \\
+        Partie rejouable par une graine          & non                       & oui                       \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Comparaison chiffrée des deux versions.}
+    \label{tab-comparaison}
 \end{table}
 
 Le nombre total de lignes a augmenté : \num{3658} lignes de programme contre \num{2666},
@@ -46,25 +46,25 @@ La relecture complète de la première version, préalable à la refonte, a mis 
 plusieurs défauts que le jeu masquait à l'usage.
 
 \begin{description}[style=nextline, leftmargin=1.2em]
-  \item[Lecture hors limites (niveau difficile)]
-    La voisine d'un coup au but, tirée au sort, était lue dans la grille avant le contrôle
-    de ses coordonnées (\cref{lst-v1-bug}). Lorsque le coup portait sur un bord, l'indice
-    valait $-1$ ou $10$ : comportement indéfini.
-  \item[Bateaux oubliés (niveau difficile)]
-    Si cette voisine était invalide, la poursuite était abandonnée et le bateau blessé
-    oublié. Le niveau \enquote{difficile} l'était donc moins que prévu.
-  \item[Boucles d'événements imbriquées]
-    Chaque redémarrage appelait \code{gtk\_main()} depuis une fonction de rappel.
-  \item[Fenêtre figée]
-    Le tour de l'ordinateur s'exécutait sans rendre la main à GTK.
-  \item[Chemins figés]
-    Images chargées relativement au dossier courant ; sons désignés par un chemin absolu
-    propre à une machine.
-  \item[Fuites]
-    Un fournisseur de style par libellé et une image par mise à jour, dont une partie
-    jamais libérée.
-  \item[Hasard biaisé]
-    Tirages par \code{rand() \% n} (\cref{sec-hasard}).
+    \item[Lecture hors limites (niveau difficile)]
+          La voisine d'un coup au but, tirée au sort, était lue dans la grille avant le contrôle
+          de ses coordonnées (\cref{lst-v1-bug}). Lorsque le coup portait sur un bord, l'indice
+          valait $-1$ ou $10$ : comportement indéfini.
+    \item[Bateaux oubliés (niveau difficile)]
+          Si cette voisine était invalide, la poursuite était abandonnée et le bateau blessé
+          oublié. Le niveau \enquote{difficile} l'était donc moins que prévu.
+    \item[Boucles d'événements imbriquées]
+          Chaque redémarrage appelait \code{gtk\_main()} depuis une fonction de rappel.
+    \item[Fenêtre figée]
+          Le tour de l'ordinateur s'exécutait sans rendre la main à GTK.
+    \item[Chemins figés]
+          Images chargées relativement au dossier courant ; sons désignés par un chemin absolu
+          propre à une machine.
+    \item[Fuites]
+          Un fournisseur de style par libellé et une image par mise à jour, dont une partie
+          jamais libérée.
+    \item[Hasard biaisé]
+          Tirages par \code{rand() \% n} (\cref{sec-hasard}).
 \end{description}
 
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
@@ -105,25 +105,25 @@ rejouer sans relancer le programme, et un ordinateur dont on voit tomber chaque 
 \section{Limites}
 
 \begin{itemize}
-  \item \textbf{L'adversaire difficile n'est pas optimal.} Sa carte de densité compte les
-        positions de chaque bateau indépendamment des autres. Un calcul exact énumérerait
-        les flottes complètes compatibles avec les observations ; il serait plus coûteux
-        pour un gain que le \cref{tab-candidats} laisse supposer faible.
-  \item \textbf{Le placement manuel n'existe pas.} Comme dans la version~1, le joueur
-        retire sa flotte au hasard jusqu'à satisfaction.
-  \item \textbf{Les images et les sons d'origine ont dû être refaits.} Ceux de 2023 avaient
-        été réunis sans que leurs sources soient notées, ce qui interdisait de diffuser le
-        jeu. La version~2.0 les signalait ; depuis la version~2.1, toutes les images sont
-        dessinées et tous les sons synthétisés par un script du dépôt
-        (\fichier{tools/generate-assets.sh}), sous la même licence que le code. Les captures
-        de l'annexe~\ref{chap-captures} montrent ces nouvelles ressources.
-  \item \textbf{Le son n'est vérifié qu'en partie.} En intégration continue, le test de bout
-        en bout décode réellement les deux effets sonores, mais vers une sortie factice :
-        aucune machine de test n'a de carte son. La restitution elle-même reste à
-        contrôler à l'oreille.
-  \item \textbf{GTK~3 est en fin de vie.} Le projet reste sur la version enseignée en
-        cours ; la vue étant isolée, un portage vers GTK~4 ne toucherait que
-        \fichier{view.c}.
+    \item \textbf{L'adversaire difficile n'est pas optimal.} Sa carte de densité compte les
+          positions de chaque bateau indépendamment des autres. Un calcul exact énumérerait
+          les flottes complètes compatibles avec les observations ; il serait plus coûteux
+          pour un gain que le \cref{tab-candidats} laisse supposer faible.
+    \item \textbf{Le placement manuel n'existe pas.} Comme dans la version~1, le joueur
+          retire sa flotte au hasard jusqu'à satisfaction.
+    \item \textbf{Les images et les sons d'origine ont dû être refaits.} Ceux de 2023 avaient
+          été réunis sans que leurs sources soient notées, ce qui interdisait de diffuser le
+          jeu. La version~2.0 les signalait ; depuis la version~2.1, toutes les images sont
+          dessinées et tous les sons synthétisés par un script du dépôt
+          (\fichier{tools/generate-assets.sh}), sous la même licence que le code. Les captures
+          de l'annexe~\ref{chap-captures} montrent ces nouvelles ressources.
+    \item \textbf{Le son n'est vérifié qu'en partie.} En intégration continue, le test de bout
+          en bout décode réellement les deux effets sonores, mais vers une sortie factice :
+          aucune machine de test n'a de carte son. La restitution elle-même reste à
+          contrôler à l'oreille.
+    \item \textbf{GTK~3 est en fin de vie.} Le projet reste sur la version enseignée en
+          cours ; la vue étant isolée, un portage vers GTK~4 ne toucherait que
+          \fichier{view.c}.
 \end{itemize}
 
 \section{Perspectives}
@@ -131,18 +131,18 @@ rejouer sans relancer le programme, et un ordinateur dont on voit tomber chaque 
 L'architecture rend plusieurs prolongements accessibles sans toucher à l'existant.
 
 \begin{description}[style=nextline, leftmargin=1.2em]
-  \item[Jeu à deux en réseau]
-    C'était l'ambition de la bibliothèque fournie avec le sujet d'origine, organisée autour
-    d'un client et d'un serveur. Le modèle actuel, qui exécute un pas par appel et ne
-    bloque jamais, s'y prête : un \enquote{joueur distant} n'est qu'une autre source de
-    coups, au même titre que l'adversaire artificiel.
-  \item[Placement manuel]
-    La fonction \code{bs\_board\_place\_ship()} existe et refuse déjà les positions
-    illicites ; il reste à lui donner une interface.
-  \item[Traduction]
-    Tous les textes sont regroupés dans un seul fichier, \fichier{texts.h}. Le passage à
-    \emph{gettext} serait mécanique.
-  \item[Distribution]
-    Un paquet Flatpak rendrait le jeu installable d'un clic sur toute distribution Linux ;
-    les métadonnées nécessaires sont déjà dans le dépôt.
+    \item[Jeu à deux en réseau]
+          C'était l'ambition de la bibliothèque fournie avec le sujet d'origine, organisée autour
+          d'un client et d'un serveur. Le modèle actuel, qui exécute un pas par appel et ne
+          bloque jamais, s'y prête : un \enquote{joueur distant} n'est qu'une autre source de
+          coups, au même titre que l'adversaire artificiel.
+    \item[Placement manuel]
+          La fonction \code{bs\_board\_place\_ship()} existe et refuse déjà les positions
+          illicites ; il reste à lui donner une interface.
+    \item[Traduction]
+          Tous les textes sont regroupés dans un seul fichier, \fichier{texts.h}. Le passage à
+          \emph{gettext} serait mécanique.
+    \item[Distribution]
+          Un paquet Flatpak rendrait le jeu installable d'un clic sur toute distribution Linux ;
+          les métadonnées nécessaires sont déjà dans le dépôt.
 \end{description}

@@ -10,12 +10,12 @@ Il défend une idée d'organisation, la \emph{programmation modulaire}, que ses 
 reprennent d'une séance à l'autre et que l'on peut résumer ainsi :
 
 \begin{itemize}
-  \item à chaque concept, un fichier d'en-tête qui en donne la définition et le mode
-        d'emploi, et un fichier source qui en réalise les fonctions de manipulation ;
-  \item l'utilisation d'un concept est indépendante de sa réalisation ;
-  \item un même programme peut recevoir plusieurs interfaces --- console, fenêtre --- et
-        c'est alors la seule partie qui doit changer ;
-  \item toute fonction écrite est aussitôt testée.
+    \item à chaque concept, un fichier d'en-tête qui en donne la définition et le mode
+          d'emploi, et un fichier source qui en réalise les fonctions de manipulation ;
+    \item l'utilisation d'un concept est indépendante de sa réalisation ;
+    \item un même programme peut recevoir plusieurs interfaces --- console, fenêtre --- et
+          c'est alors la seule partie qui doit changer ;
+    \item toute fonction écrite est aussitôt testée.
 \end{itemize}
 
 De là découle le découpage d'une application en trois bibliothèques : le \emph{modèle}, qui
@@ -34,15 +34,15 @@ Mais ce jeu tenait dans \emph{un seul fichier} de \num{2666} lignes, et son orga
 contredisait ce que le cours enseignait :
 
 \begin{itemize}
-  \item l'état de la partie était réparti entre sept variables globales et les composants
-        graphiques eux-mêmes : la structure décrivant une case contenait à la fois
-        \enquote{y a-t-il un bateau ?} et l'adresse du bouton qui l'affiche ;
-  \item les trois niveaux étaient trois copies d'une même fonction de plusieurs centaines de
-        lignes ; une correction faite dans l'une manquait dans les autres ;
-  \item aucune règle ne pouvait s'exécuter sans ouvrir une fenêtre, donc aucun test
-        automatique n'était possible ;
-  \item le programme ne fonctionnait que lancé depuis son propre dossier, et sa variante
-        sonore que sur la machine où elle avait été écrite.
+    \item l'état de la partie était réparti entre sept variables globales et les composants
+          graphiques eux-mêmes : la structure décrivant une case contenait à la fois
+          \enquote{y a-t-il un bateau ?} et l'adresse du bouton qui l'affiche ;
+    \item les trois niveaux étaient trois copies d'une même fonction de plusieurs centaines de
+          lignes ; une correction faite dans l'une manquait dans les autres ;
+    \item aucune règle ne pouvait s'exécuter sans ouvrir une fenêtre, donc aucun test
+          automatique n'était possible ;
+    \item le programme ne fonctionnait que lancé depuis son propre dossier, et sa variante
+          sonore que sur la machine où elle avait été écrite.
 \end{itemize}
 
 Le programme \emph{marchait}. Il n'était ni vérifiable, ni modifiable sans risque, ni
@@ -55,14 +55,14 @@ Le joueur doit retrouver les mêmes règles, les mêmes écrans, les mêmes text
 surface, le programme doit devenir ce qu'un logiciel entretenu dans la durée doit être :
 
 \begin{enumerate}
-  \item \textbf{modulaire} --- un modèle réellement indépendant de l'interface, au point de
-        pouvoir être piloté par une seconde interface ;
-  \item \textbf{vérifié} --- des tests automatiques pour les règles, les stratégies de
-        l'ordinateur et l'interface elle-même ;
-  \item \textbf{reproductible} --- une partie entièrement déterminée par une graine, une
-        compilation identique sur un poste de travail et sur un serveur ;
-  \item \textbf{livrable} --- un exécutable unique, des paquets, une intégration et une
-        livraison continues.
+    \item \textbf{modulaire} --- un modèle réellement indépendant de l'interface, au point de
+          pouvoir être piloté par une seconde interface ;
+    \item \textbf{vérifié} --- des tests automatiques pour les règles, les stratégies de
+          l'ordinateur et l'interface elle-même ;
+    \item \textbf{reproductible} --- une partie entièrement déterminée par une graine, une
+          compilation identique sur un poste de travail et sur un serveur ;
+    \item \textbf{livrable} --- un exécutable unique, des paquets, une intégration et une
+          livraison continues.
 \end{enumerate}
 
 \section{Organisation du rapport}

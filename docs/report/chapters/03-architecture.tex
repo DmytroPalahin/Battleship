@@ -4,39 +4,39 @@
 \section{Une seule règle : les dépendances pointent vers l'intérieur}
 
 L'architecture tient en une phrase : \textbf{le moteur de jeu ne sait pas comment il est
-affiché ; les interfaces connaissent le moteur ; rien ne connaît les interfaces}
+    affiché ; les interfaces connaissent le moteur ; rien ne connaît les interfaces}
 (\cref{fig-couches}).
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[node distance=7mm and 9mm]
-    \node[coeur, minimum width=11.2cm, minimum height=1.5cm] (core)
-      {\textbf{battleship\_core} --- moteur de jeu (le \emph{modèle})\\[2pt]
-       \footnotesize C11, bibliothèque standard seule, aucune allocation dynamique};
+    \centering
+    \begin{tikzpicture}[node distance=7mm and 9mm]
+        \node[coeur, minimum width=11.2cm, minimum height=1.5cm] (core)
+        {\textbf{battleship\_core} --- moteur de jeu (le \emph{modèle})\\[2pt]
+            \footnotesize C11, bibliothèque standard seule, aucune allocation dynamique};
 
-    \node[couche, above=14mm of core.north west, anchor=south west, minimum width=3.4cm,
-          minimum height=1.6cm] (gui)
-      {\textbf{battleship}\\[1pt]\footnotesize application GTK~3\\\footnotesize vue + contrôleur};
-    \node[couche, above=14mm of core.north, anchor=south, minimum width=3.4cm,
-          minimum height=1.6cm] (cli)
-      {\textbf{battleship-cli}\\[1pt]\footnotesize jeu en terminal\\\footnotesize simulateur};
-    \node[couche, above=14mm of core.north east, anchor=south east, minimum width=3.4cm,
-          minimum height=1.6cm] (tests)
-      {\textbf{tests}\\[1pt]\footnotesize unitaires\\\footnotesize et de propriétés};
+        \node[couche, above=14mm of core.north west, anchor=south west, minimum width=3.4cm,
+            minimum height=1.6cm] (gui)
+        {\textbf{battleship}\\[1pt]\footnotesize application GTK~3\\\footnotesize vue + contrôleur};
+        \node[couche, above=14mm of core.north, anchor=south, minimum width=3.4cm,
+            minimum height=1.6cm] (cli)
+        {\textbf{battleship-cli}\\[1pt]\footnotesize jeu en terminal\\\footnotesize simulateur};
+        \node[couche, above=14mm of core.north east, anchor=south east, minimum width=3.4cm,
+            minimum height=1.6cm] (tests)
+        {\textbf{tests}\\[1pt]\footnotesize unitaires\\\footnotesize et de propriétés};
 
-    \node[externe, above=9mm of gui, minimum width=3.4cm] (gtk) {GTK~3, GLib\\[-1pt]
-      \footnotesize GStreamer (facultatif)};
+        \node[externe, above=9mm of gui, minimum width=3.4cm] (gtk) {GTK~3, GLib\\[-1pt]
+            \footnotesize GStreamer (facultatif)};
 
-    \draw[fleche] (gui.south) -- (gui.south |- core.north);
-    \draw[fleche] (cli.south) -- (core.north);
-    \draw[fleche] (tests.south) -- (tests.south |- core.north);
-    \draw[fleche, draw=ardoise, dashed] (gui.north) -- (gtk.south);
+        \draw[fleche] (gui.south) -- (gui.south |- core.north);
+        \draw[fleche] (cli.south) -- (core.north);
+        \draw[fleche] (tests.south) -- (tests.south |- core.north);
+        \draw[fleche, draw=ardoise, dashed] (gui.north) -- (gtk.south);
 
-    \node[note, right=5mm of gtk, text width=6.4cm, align=left]
-      {Une flèche se lit \enquote{dépend de}.\\Aucune ne part du moteur.};
-  \end{tikzpicture}
-  \caption{Les couches du programme. Trois exécutables sont construits sur le même moteur.}
-  \label{fig-couches}
+        \node[note, right=5mm of gtk, text width=6.4cm, align=left]
+        {Une flèche se lit \enquote{dépend de}.\\Aucune ne part du moteur.};
+    \end{tikzpicture}
+    \caption{Les couches du programme. Trois exécutables sont construits sur le même moteur.}
+    \label{fig-couches}
 \end{figure}
 
 Cette règle n'est pas une convention que l'on se promet de respecter : elle est
@@ -61,27 +61,27 @@ est mise à jour. Il en tire trois bibliothèques. Le \cref{tab-mvc} montre comm
 projet les réalise.
 
 \begin{table}[ht]
-  \centering
-  \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
-    \toprule
-    & \textbf{Rôle (cours)} & \textbf{Réalisation (projet)} \\
-    \midrule
-    \textbf{Modèle} & Types utilisateur et fonctions de manipulation : le jeu et ses règles. &
-      \fichier{include/battleship/}, \fichier{src/core/} --- plateau, tirs, déductions,
-      tour de jeu, adversaire. \\
-    \addlinespace
-    \textbf{Vue} & Composants graphiques à organiser dans des fenêtres. &
-      \fichier{src/ui/view.c} --- tous les \emph{widgets}, aucune règle ;
-      \fichier{assets/style.css} pour l'apparence. \\
-    \addlinespace
-    \textbf{Contrôleur} & Chef d'orchestre : associe les actions aux événements,
-      synchronise la vue. &
-      \fichier{src/ui/controller.c} --- demande au modèle de jouer, puis resynchronise
-      la vue. \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Correspondance entre l'organisation du cours et celle du projet.}
-  \label{tab-mvc}
+    \centering
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+        \toprule
+                            & \textbf{Rôle (cours)}                                                  & \textbf{Réalisation (projet)} \\
+        \midrule
+        \textbf{Modèle}     & Types utilisateur et fonctions de manipulation : le jeu et ses règles. &
+        \fichier{include/battleship/}, \fichier{src/core/} --- plateau, tirs, déductions,
+        tour de jeu, adversaire.                                                                                                     \\
+        \addlinespace
+        \textbf{Vue}        & Composants graphiques à organiser dans des fenêtres.                   &
+        \fichier{src/ui/view.c} --- tous les \emph{widgets}, aucune règle ;
+        \fichier{assets/style.css} pour l'apparence.                                                                                 \\
+        \addlinespace
+        \textbf{Contrôleur} & Chef d'orchestre : associe les actions aux événements,
+        synchronise la vue. &
+        \fichier{src/ui/controller.c} --- demande au modèle de jouer, puis resynchronise
+        la vue.                                                                                                                      \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Correspondance entre l'organisation du cours et celle du projet.}
+    \label{tab-mvc}
 \end{table}
 
 \subsection{Qui possède quoi ?}
@@ -91,7 +91,7 @@ contrôleur, et retient celle où le modèle est \emph{référencé} et la vue \
 le modèle a une existence propre, antérieure et postérieure à toute interface graphique,
 alors que la vue n'a de raison d'être qu'avec son contrôleur. Le projet fait exactement ce
 choix (\cref{lst-controleur})\footnote{Dans les extraits de la version~2, les commentaires,
-rédigés en anglais dans le code, sont traduits ; certains sont abrégés.}.
+    rédigés en anglais dans le code, sont traduits ; certains sont abrégés.}.
 
 \begin{lstlisting}[caption={La structure du contrôleur (\fichier{src/ui/controller.c}).},
                    label={lst-controleur}]
@@ -133,28 +133,28 @@ typedef struct bs_view_actions {
 \end{lstlisting}
 
 La conséquence est forte : \textbf{aucun \code{GtkWidget} ne franchit l'interface de la
-vue}. Le contrôleur ne manipule pas de boutons ; il dit \emph{quoi} montrer --- \enquote{cette
-case est un coup au but} --- jamais \emph{comment}. Il pourrait piloter une tout autre
+    vue}. Le contrôleur ne manipule pas de boutons ; il dit \emph{quoi} montrer --- \enquote{cette
+    case est un coup au but} --- jamais \emph{comment}. Il pourrait piloter une tout autre
 bibliothèque graphique sans changer d'une ligne.
 
 \section{Les modules}
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[node distance=6mm]
-    \node[boite] (types) {\textbf{types}\\[-1pt]\footnotesize coordonnées,\\[-2pt]\footnotesize statuts};
-    \node[boite, right=of types] (rng) {\textbf{rng}\\[-1pt]\footnotesize hasard\\[-2pt]\footnotesize reproductible};
-    \node[boite, right=of rng] (board) {\textbf{board}\\[-1pt]\footnotesize flotte, tirs,\\[-2pt]\footnotesize déductions};
-    \node[boite, right=of board] (ai) {\textbf{ai}\\[-1pt]\footnotesize choix\\[-2pt]\footnotesize d'une cible};
-    \node[boite, right=of ai] (game) {\textbf{game}\\[-1pt]\footnotesize tour de jeu,\\[-2pt]\footnotesize score, fin};
-    \draw[fleche] (rng) -- (types);
-    \draw[fleche] (board) -- (rng);
-    \draw[fleche] (ai) -- (board);
-    \draw[fleche] (game) -- (ai);
-  \end{tikzpicture}
-  \caption{Les modules du moteur forment une chaîne : chacun ne s'appuie que sur les
-           précédents.}
-  \label{fig-modules}
+    \centering
+    \begin{tikzpicture}[node distance=6mm]
+        \node[boite] (types) {\textbf{types}\\[-1pt]\footnotesize coordonnées,\\[-2pt]\footnotesize statuts};
+        \node[boite, right=of types] (rng) {\textbf{rng}\\[-1pt]\footnotesize hasard\\[-2pt]\footnotesize reproductible};
+        \node[boite, right=of rng] (board) {\textbf{board}\\[-1pt]\footnotesize flotte, tirs,\\[-2pt]\footnotesize déductions};
+        \node[boite, right=of board] (ai) {\textbf{ai}\\[-1pt]\footnotesize choix\\[-2pt]\footnotesize d'une cible};
+        \node[boite, right=of ai] (game) {\textbf{game}\\[-1pt]\footnotesize tour de jeu,\\[-2pt]\footnotesize score, fin};
+        \draw[fleche] (rng) -- (types);
+        \draw[fleche] (board) -- (rng);
+        \draw[fleche] (ai) -- (board);
+        \draw[fleche] (game) -- (ai);
+    \end{tikzpicture}
+    \caption{Les modules du moteur forment une chaîne : chacun ne s'appuie que sur les
+        précédents.}
+    \label{fig-modules}
 \end{figure}
 
 À l'intérieur du moteur, les cinq modules forment une chaîne stricte (\cref{fig-modules}).
@@ -162,29 +162,29 @@ Chacun suit le patron du cours : un fichier d'en-tête qui fixe les responsabili
 structure de données, mode d'emploi, pré-conditions --- et un fichier source qui les réalise. Le \cref{tab-arborescence} donne l'organisation complète du dépôt.
 
 \begin{table}[ht]
-  \centering
-  \small
-  \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xr@{}}
-    \toprule
-    \textbf{Dossier} & \textbf{Contenu} & \textbf{Lignes} \\
-    \midrule
-    \fichier{include/battleship/}, \fichier{src/core/} & Moteur de jeu : interface publique et réalisation & \num{1343} \\
-    \fichier{src/cli/} & Interface terminal et simulateur & \num{645} \\
-    \fichier{src/ui/} & Application GTK : vue, contrôleur, coquille, son & \num{1670} \\
-    \fichier{assets/} & Images, sons, feuille de style (incorporés à l'exécutable) & \num{199} \\
-    \fichier{tests/} & Tests unitaires, de propriétés et de l'interface terminal & \num{1582} \\
-    \fichier{docs/} & Guide d'architecture, décisions, présent rapport & \\
-    \fichier{cmake/}, \fichier{packaging/} & Modules de construction, intégration au bureau & \\
-    \fichier{.github/} & Intégration et livraison continues & \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Organisation du dépôt. Les lignes comptent le code et ses commentaires ;
-           pour \fichier{assets/}, la feuille de style seule.}
-  \label{tab-arborescence}
+    \centering
+    \small
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xr@{}}
+        \toprule
+        \textbf{Dossier}                                   & \textbf{Contenu}                                           & \textbf{Lignes} \\
+        \midrule
+        \fichier{include/battleship/}, \fichier{src/core/} & Moteur de jeu : interface publique et réalisation          & \num{1343}      \\
+        \fichier{src/cli/}                                 & Interface terminal et simulateur                           & \num{645}       \\
+        \fichier{src/ui/}                                  & Application GTK : vue, contrôleur, coquille, son           & \num{1670}      \\
+        \fichier{assets/}                                  & Images, sons, feuille de style (incorporés à l'exécutable) & \num{199}       \\
+        \fichier{tests/}                                   & Tests unitaires, de propriétés et de l'interface terminal  & \num{1582}      \\
+        \fichier{docs/}                                    & Guide d'architecture, décisions, présent rapport           &                 \\
+        \fichier{cmake/}, \fichier{packaging/}             & Modules de construction, intégration au bureau             &                 \\
+        \fichier{.github/}                                 & Intégration et livraison continues                         &                 \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Organisation du dépôt. Les lignes comptent le code et ses commentaires ;
+        pour \fichier{assets/}, la feuille de style seule.}
+    \label{tab-arborescence}
 \end{table}
 
 \begin{retenir}
-Le code des tests (\num{1582} lignes) est plus volumineux que celui du moteur qu'il vérifie
-(\num{1343} lignes, en-têtes compris). Ce rapport est habituel pour un composant dont on
-veut pouvoir garantir le comportement.
+    Le code des tests (\num{1582} lignes) est plus volumineux que celui du moteur qu'il vérifie
+    (\num{1343} lignes, en-têtes compris). Ce rapport est habituel pour un composant dont on
+    veut pouvoir garantir le comportement.
 \end{retenir}

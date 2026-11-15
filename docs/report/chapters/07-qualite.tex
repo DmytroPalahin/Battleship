@@ -8,32 +8,32 @@ La version~2 en fait une chaîne automatique, exécutée à chaque modification 
 \section{Stratégie de test}
 
 \begin{table}[ht]
-  \centering
-  \small
-  \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
-    \toprule
-    \textbf{Niveau} & \textbf{Ce qui est vérifié, et comment} \\
-    \midrule
-    Unitaire & 54 cas répartis en cinq programmes : chaque fonction publique du moteur,
-               chaque chemin d'erreur. \\
-    \addlinespace
-    Propriétés & \num{2250} parties complètes jouées par le moteur contre lui-même ; tous
-                 les invariants sont recalculés \emph{après chaque tir}. \\
-    \addlinespace
-    Stratégies & Les trois niveaux doivent rester ordonnés par force mesurée, avec une
-                 marge ; un bateau touché doit être poursuivi. \\
-    \addlinespace
-    Reproductibilité & Une simulation à graine fixée est comparée, octet pour octet, à un
-                       fichier de référence versionné. \\
-    \addlinespace
-    Interface terminal & Une session scriptée est comparée à la transcription attendue. \\
-    \addlinespace
-    Interface graphique & Une partie entière est jouée à travers les vrais boutons GTK,
-                          tout avertissement de GTK étant fatal. \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Les niveaux de test.}
-  \label{tab-tests}
+    \centering
+    \small
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Niveau}     & \textbf{Ce qui est vérifié, et comment}                                  \\
+        \midrule
+        Unitaire            & 54 cas répartis en cinq programmes : chaque fonction publique du moteur,
+        chaque chemin d'erreur.                                                                        \\
+        \addlinespace
+        Propriétés          & \num{2250} parties complètes jouées par le moteur contre lui-même ; tous
+        les invariants sont recalculés \emph{après chaque tir}.                                        \\
+        \addlinespace
+        Stratégies          & Les trois niveaux doivent rester ordonnés par force mesurée, avec une
+        marge ; un bateau touché doit être poursuivi.                                                  \\
+        \addlinespace
+        Reproductibilité    & Une simulation à graine fixée est comparée, octet pour octet, à un
+        fichier de référence versionné.                                                                \\
+        \addlinespace
+        Interface terminal  & Une session scriptée est comparée à la transcription attendue.           \\
+        \addlinespace
+        Interface graphique & Une partie entière est jouée à travers les vrais boutons GTK,
+        tout avertissement de GTK étant fatal.                                                         \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Les niveaux de test.}
+    \label{tab-tests}
 \end{table}
 
 \subsection{Un harnais de test de cent lignes}
@@ -71,13 +71,13 @@ combinaisons de niveaux --- et, après chaque tir, recalcule tout ce que le mote
 jour pour le comparer à ce qu'il annonce :
 
 \begin{itemize}
-  \item le nombre de ponts et de bateaux à flot, recompté case par case ;
-  \item la cohérence des états : aucune case d'eau n'est annoncée touchée, aucun bateau
-        n'est annoncé dans l'eau, une case est \code{SUNK} exactement quand son bateau est
-        coulé ;
-  \item le score, qui doit se lire intégralement sur le plateau ;
-  \item le tour de jeu : la main ne change que sur un tir manqué ;
-  \item la fin : jamais deux flottes coulées, un vainqueur correctement désigné.
+    \item le nombre de ponts et de bateaux à flot, recompté case par case ;
+    \item la cohérence des états : aucune case d'eau n'est annoncée touchée, aucun bateau
+          n'est annoncé dans l'eau, une case est \code{SUNK} exactement quand son bateau est
+          coulé ;
+    \item le score, qui doit se lire intégralement sur le plateau ;
+    \item le tour de jeu : la main ne change que sur un tir manqué ;
+    \item la fin : jamais deux flottes coulées, un vainqueur correctement désigné.
 \end{itemize}
 
 Exécuté sous les \emph{sanitizers} (\cref{sec-sanitizers}), ce test fait aussi office de
@@ -92,8 +92,8 @@ la case choisie. Chaque coup parcourt ainsi le trajet complet d'une action de
 l'utilisateur :
 
 \begin{center}
-  bouton GTK $\;\rightarrow\;$ signal \enquote{clicked} $\;\rightarrow\;$ vue
-  $\;\rightarrow\;$ contrôleur $\;\rightarrow\;$ modèle $\;\rightarrow\;$ synchronisation.
+    bouton GTK $\;\rightarrow\;$ signal \enquote{clicked} $\;\rightarrow\;$ vue
+    $\;\rightarrow\;$ contrôleur $\;\rightarrow\;$ modèle $\;\rightarrow\;$ synchronisation.
 \end{center}
 
 En fin de partie, le test répond \enquote{quitter} à la boîte de dialogue, là encore comme
@@ -119,7 +119,7 @@ devient visible dans l'historique (exigence~C2).
 \subsection{Avertissements}
 
 Le code est compilé avec un jeu d'avertissements étendu (\code{-Wall -Wextra -Wpedantic
--Wshadow -Wconversion -Wsign-conversion -Wstrict-prototypes}\dots) et tout avertissement est
+    -Wshadow -Wconversion -Wsign-conversion -Wstrict-prototypes}\dots) et tout avertissement est
 une erreur (exigence~C5). La version~1 ne demandait que \code{-Wall}.
 
 \subsection{Analyse dynamique}
@@ -139,24 +139,24 @@ des tests est mesurée sur le moteur (\cref{tab-couverture}) ; la construction �
 elle passe sous \SI{95}{\percent}.
 
 \begin{table}[ht]
-  \centering
-  \begin{tabular}{@{}l S[table-format=3.0] S[table-format=3.2] l@{}}
-    \toprule
-    \textbf{Fichier} & {\textbf{Lignes}} & {\textbf{Couvertes (\si{\percent})}} &
-    \textbf{Lignes non couvertes} \\
-    \midrule
-    \fichier{ai.c}     & 130 & 100.00 & \\
-    \fichier{board.c}  & 186 &  97.85 & impasse de placement \\
-    \fichier{common.c} &  14 & 100.00 & \\
-    \fichier{game.c}   & 101 &  98.02 & échec du placement, propagé \\
-    \fichier{rng.c}    &  40 & 100.00 & \\
-    \midrule
-    \textbf{Moteur}    & {\bfseries 471} & {\bfseries 98,73} & \\
-    \bottomrule
-  \end{tabular}
-  \caption{Couverture de lignes du moteur par ses tests. Les six lignes non couvertes
-           traitent toutes le cas, jamais observé, où une flotte ne peut pas être placée.}
-  \label{tab-couverture}
+    \centering
+    \begin{tabular}{@{}l S[table-format=3.0] S[table-format=3.2] l@{}}
+        \toprule
+        \textbf{Fichier}   & {\textbf{Lignes}} & {\textbf{Couvertes (\si{\percent})}} &
+        \textbf{Lignes non couvertes}                                                                               \\
+        \midrule
+        \fichier{ai.c}     & 130               & 100.00                               &                             \\
+        \fichier{board.c}  & 186               & 97.85                                & impasse de placement        \\
+        \fichier{common.c} & 14                & 100.00                               &                             \\
+        \fichier{game.c}   & 101               & 98.02                                & échec du placement, propagé \\
+        \fichier{rng.c}    & 40                & 100.00                               &                             \\
+        \midrule
+        \textbf{Moteur}    & {\bfseries 471}   & {\bfseries 98,73}                    &                             \\
+        \bottomrule
+    \end{tabular}
+    \caption{Couverture de lignes du moteur par ses tests. Les six lignes non couvertes
+        traitent toutes le cas, jamais observé, où une flotte ne peut pas être placée.}
+    \label{tab-couverture}
 \end{table}
 
 \section{Intégration continue}
@@ -170,8 +170,8 @@ optimisée, \emph{sanitizers}, couverture, construction sans interface graphique
 continue n'exécute rien d'autre que
 
 \begin{center}
-  \code{cmake -{}-preset X} \quad\code{cmake -{}-build -{}-preset X}\quad
-  \code{ctest -{}-preset X}
+    \code{cmake -{}-preset X} \quad\code{cmake -{}-build -{}-preset X}\quad
+    \code{ctest -{}-preset X}
 \end{center}
 
 et aucune option de compilation n'est écrite dans un fichier de la chaîne. Un échec sur le
@@ -180,58 +180,58 @@ serveur se reproduit donc sur un poste de travail par la même commande.
 \subsection{La chaîne}
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[node distance=4mm and 7mm,
-      tache/.style={boite, font=\sffamily\footnotesize, minimum width=3.5cm,
+    \centering
+    \begin{tikzpicture}[node distance=4mm and 7mm,
+            tache/.style={boite, font=\sffamily\footnotesize, minimum width=3.5cm,
                     minimum height=8.5mm, inner sep=3pt},
-      titre/.style={font=\sffamily\small\bfseries, text=marine}]
-    \node[coeur, minimum width=2.0cm, minimum height=1.1cm] (push) {\texttt{git push}};
+            titre/.style={font=\sffamily\small\bfseries, text=marine}]
+        \node[coeur, minimum width=2.0cm, minimum height=1.1cm] (push) {\texttt{git push}};
 
-    \node[tache, right=13mm of push, yshift=24mm] (fmt) {format\\[-1pt]\scriptsize clang-format};
-    \node[tache, below=of fmt] (build) {build ($\times 5$)\\[-1pt]\scriptsize GCC, Clang, Apple Clang};
-    \node[tache, below=of build] (head) {headless\\[-1pt]\scriptsize Debian, sans GTK};
-    \node[tache, right=of fmt] (asan) {sanitizers\\[-1pt]\scriptsize ASan + UBSan};
-    \node[tache, below=of asan] (cov) {coverage\\[-1pt]\scriptsize seuil \SI{95}{\percent}};
-    \node[tache, below=of cov] (lint) {lint\\[-1pt]\scriptsize clang-tidy, cppcheck};
-    \node[tache, below=of head, fill=brume] (codeql) {CodeQL};
-    \node[tache, below=of lint, fill=brume] (report) {rapport\\[-1pt]\scriptsize \LaTeX{} $\rightarrow$ PDF};
+        \node[tache, right=13mm of push, yshift=24mm] (fmt) {format\\[-1pt]\scriptsize clang-format};
+        \node[tache, below=of fmt] (build) {build ($\times 5$)\\[-1pt]\scriptsize GCC, Clang, Apple Clang};
+        \node[tache, below=of build] (head) {headless\\[-1pt]\scriptsize Debian, sans GTK};
+        \node[tache, right=of fmt] (asan) {sanitizers\\[-1pt]\scriptsize ASan + UBSan};
+        \node[tache, below=of asan] (cov) {coverage\\[-1pt]\scriptsize seuil \SI{95}{\percent}};
+        \node[tache, below=of cov] (lint) {lint\\[-1pt]\scriptsize clang-tidy, cppcheck};
+        \node[tache, below=of head, fill=brume] (codeql) {CodeQL};
+        \node[tache, below=of lint, fill=brume] (report) {rapport\\[-1pt]\scriptsize \LaTeX{} $\rightarrow$ PDF};
 
-    \begin{scope}[on background layer]
-      \node[draw=ocean, dashed, rounded corners=4pt, inner sep=6pt, fill=ecume!50,
-            fit=(fmt)(lint)(build)(head)(asan)(cov)] (ci) {};
-    \end{scope}
-    \node[titre, above=0.5mm of ci.north] {Intégration continue (\fichier{ci.yml})};
+        \begin{scope}[on background layer]
+            \node[draw=ocean, dashed, rounded corners=4pt, inner sep=6pt, fill=ecume!50,
+                fit=(fmt)(lint)(build)(head)(asan)(cov)] (ci) {};
+        \end{scope}
+        \node[titre, above=0.5mm of ci.north] {Intégration continue (\fichier{ci.yml})};
 
-    \draw[fleche] (push.east) -- ++(5mm,0) |- (ci.west);
-    \draw[fleche] (push.east) -- ++(5mm,0) |- (codeql.west);
+        \draw[fleche] (push.east) -- ++(5mm,0) |- (ci.west);
+        \draw[fleche] (push.east) -- ++(5mm,0) |- (codeql.west);
 
-    \node[coeur, below=26mm of push, minimum width=2.0cm, minimum height=1.1cm] (tag)
-      {étiquette\\[-1pt]\texttt{v*}};
-    \node[tache, minimum width=7.7cm, fill=sable, draw=corail] (rel)
-      at ($(codeql.south)!0.5!(report.south) + (0,-13mm)$)
-      {livraison (\fichier{release.yml}) : tests, paquets \texttt{.tar.gz} et \texttt{.deb},\\[-1pt]
-       sommes de contrôle, attestation de provenance, PDF du rapport};
-    \draw[fleche, draw=corail] (tag.east) -- ++(5mm,0) |- (rel.west);
-  \end{tikzpicture}
-  \caption{La chaîne d'intégration et de livraison continues (GitHub Actions).}
-  \label{fig-ci}
+        \node[coeur, below=26mm of push, minimum width=2.0cm, minimum height=1.1cm] (tag)
+        {étiquette\\[-1pt]\texttt{v*}};
+        \node[tache, minimum width=7.7cm, fill=sable, draw=corail] (rel)
+        at ($(codeql.south)!0.5!(report.south) + (0,-13mm)$)
+        {livraison (\fichier{release.yml}) : tests, paquets \texttt{.tar.gz} et \texttt{.deb},\\[-1pt]
+            sommes de contrôle, attestation de provenance, PDF du rapport};
+        \draw[fleche, draw=corail] (tag.east) -- ++(5mm,0) |- (rel.west);
+    \end{tikzpicture}
+    \caption{La chaîne d'intégration et de livraison continues (GitHub Actions).}
+    \label{fig-ci}
 \end{figure}
 
 À chaque \emph{push} et à chaque demande de fusion, six tâches s'exécutent en parallèle
 (\cref{fig-ci}) :
 
 \begin{description}[style=nextline, leftmargin=1.2em]
-  \item[format] Vérifie la mise en forme de tous les fichiers source.
-  \item[build] Compile et teste avec GCC et Clang sous Ubuntu, en mode \emph{Debug} et
-    \emph{Release}, et avec Apple Clang sous macOS ; sous Linux, joue en plus la partie de
-    bout en bout dans l'interface graphique et conserve la capture d'écran.
-  \item[headless] Compile et teste le moteur et l'interface terminal dans un conteneur
-    Debian où GTK n'est pas installé : c'est la preuve de l'exigence~C1. Ce conteneur
-    fournit aussi la plus ancienne version de CMake prise en charge.
-  \item[sanitizers] Rejoue tous les tests, interface graphique comprise, sous ASan et
-    UBSan.
-  \item[coverage] Mesure la couverture du moteur et applique le seuil.
-  \item[lint] Lance clang-tidy et cppcheck.
+    \item[format] Vérifie la mise en forme de tous les fichiers source.
+    \item[build] Compile et teste avec GCC et Clang sous Ubuntu, en mode \emph{Debug} et
+          \emph{Release}, et avec Apple Clang sous macOS ; sous Linux, joue en plus la partie de
+          bout en bout dans l'interface graphique et conserve la capture d'écran.
+    \item[headless] Compile et teste le moteur et l'interface terminal dans un conteneur
+          Debian où GTK n'est pas installé : c'est la preuve de l'exigence~C1. Ce conteneur
+          fournit aussi la plus ancienne version de CMake prise en charge.
+    \item[sanitizers] Rejoue tous les tests, interface graphique comprise, sous ASan et
+          UBSan.
+    \item[coverage] Mesure la couverture du moteur et applique le seuil.
+    \item[lint] Lance clang-tidy et cppcheck.
 \end{description}
 
 Deux autres chaînes complètent le dispositif : l'analyse de sécurité CodeQL, et la
@@ -255,10 +255,10 @@ a besoin, la lecture seule par défaut.
 \section{Conventions}
 
 \begin{itemize}
-  \item Les messages de \emph{commit} suivent les \emph{Conventional Commits}
-        (\code{feat(ai): \dots}, \code{fix(ui): \dots}).
-  \item Les versions suivent le versionnage sémantique~\cite{semver} ; le fichier
-        \fichier{CHANGELOG.md} décrit chaque version au format \emph{Keep a Changelog}.
-  \item Les choix d'architecture sont consignés dans de courtes fiches de décision
-        (\fichier{docs/adr/}) : le contexte, la décision, ses conséquences.
+    \item Les messages de \emph{commit} suivent les \emph{Conventional Commits}
+          (\code{feat(ai): \dots}, \code{fix(ui): \dots}).
+    \item Les versions suivent le versionnage sémantique~\cite{semver} ; le fichier
+          \fichier{CHANGELOG.md} décrit chaque version au format \emph{Keep a Changelog}.
+    \item Les choix d'architecture sont consignés dans de courtes fiches de décision
+          (\fichier{docs/adr/}) : le contexte, la décision, ses conséquences.
 \end{itemize}

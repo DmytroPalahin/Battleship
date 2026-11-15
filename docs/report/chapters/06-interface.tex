@@ -8,16 +8,16 @@ en C. Trois
 de ses notions, vues en cours, structurent ce chapitre.
 
 \begin{description}[style=nextline, leftmargin=1.2em]
-  \item[Héritage par inclusion] Un bouton \emph{est} un conteneur, qui \emph{est} un
-    widget : chaque structure commence par celle dont elle hérite, et des macros de
-    transtypage (\code{GTK\_WINDOW()}, \code{GTK\_BOX()}\dots) permettent d'appliquer à un
-    objet les fonctions de ses ancêtres.
-  \item[Conteneurs] Une fenêtre ne contient qu'un seul widget ; on y place donc des boîtes
-    et des grilles, qui organisent les autres.
-  \item[Programmation événementielle] Une fois la boucle d'événements lancée, le programme
-    ne décide plus de l'ordre des opérations. Il se contente d'avoir \emph{attaché}, au
-    préalable, une fonction de rappel à chaque événement qui l'intéresse, avec
-    \code{g\_signal\_connect()}.
+    \item[Héritage par inclusion] Un bouton \emph{est} un conteneur, qui \emph{est} un
+          widget : chaque structure commence par celle dont elle hérite, et des macros de
+          transtypage (\code{GTK\_WINDOW()}, \code{GTK\_BOX()}\dots) permettent d'appliquer à un
+          objet les fonctions de ses ancêtres.
+    \item[Conteneurs] Une fenêtre ne contient qu'un seul widget ; on y place donc des boîtes
+          et des grilles, qui organisent les autres.
+    \item[Programmation événementielle] Une fois la boucle d'événements lancée, le programme
+          ne décide plus de l'ordre des opérations. Il se contente d'avoir \emph{attaché}, au
+          préalable, une fonction de rappel à chaque événement qui l'intéresse, avec
+          \code{g\_signal\_connect()}.
 \end{description}
 
 \section{La vue}
@@ -29,48 +29,48 @@ Changer d'écran revient à changer la page visible, sans détruire ni recréer 
 (\cref{fig-widgets}).
 
 \begin{figure}[ht]
-  \centering
-  \begin{forest}
-    for tree={
-      font=\sffamily\footnotesize, draw=marine, line width=0.5pt, rounded corners=2pt,
-      fill=white, inner sep=3.5pt, grow'=0, anchor=west, child anchor=west,
-      parent anchor=east, l sep=6mm, s sep=1.4mm, forked edge, fork sep=3mm,
-      edge={draw=marine, line width=0.5pt},
-    },
-    feuille/.style={fill=brume, draw=ardoise!70},
-    [GtkApplicationWindow, fill=marine, text=white
-      [GtkStack
-        [{page \enquote{menu}}, fill=ecume
-          [{barre d'infos}, feuille]
-          [{titre}, feuille]
-          [{trois boutons de niveau}, feuille]
-        ]
-        [{page \enquote{jeu}}, fill=ecume
-          [{barre d'infos}, feuille]
-          [{plateaux}
-            [{flotte du joueur (GtkGrid)}, feuille]
-            [{illustration}, feuille]
-            [{flotte adverse (GtkGrid)}, feuille]
-          ]
-          [{pied}
-            [{niveau en cours}, feuille]
-            [{ligne de statut}, feuille]
-            [{boutons de commande}, feuille]
-          ]
-        ]
-      ]
-    ]
-  \end{forest}
-  \caption{Arbre des composants de la fenêtre principale. Les nœuds intermédiaires sont
-           des boîtes (\code{GtkBox}). La barre d'infos ouvre les règles et la présentation ; chaque flotte réunit un titre, une grille de cent
-           boutons encadrée par ses coordonnées, et un score.}
-  \label{fig-widgets}
+    \centering
+    \begin{forest}
+        for tree={
+                font=\sffamily\footnotesize, draw=marine, line width=0.5pt, rounded corners=2pt,
+                fill=white, inner sep=3.5pt, grow'=0, anchor=west, child anchor=west,
+                parent anchor=east, l sep=6mm, s sep=1.4mm, forked edge, fork sep=3mm,
+                edge={draw=marine, line width=0.5pt},
+            },
+        feuille/.style={fill=brume, draw=ardoise!70},
+            [GtkApplicationWindow, fill=marine, text=white
+                    [GtkStack
+                            [{page \enquote{menu}}, fill=ecume
+                                    [{barre d'infos}, feuille]
+                                    [{titre}, feuille]
+                                    [{trois boutons de niveau}, feuille]
+                            ]
+                            [{page \enquote{jeu}}, fill=ecume
+                                    [{barre d'infos}, feuille]
+                                    [{plateaux}
+                                        [{flotte du joueur (GtkGrid)}, feuille]
+                                        [{illustration}, feuille]
+                                        [{flotte adverse (GtkGrid)}, feuille]
+                                    ]
+                                    [{pied}
+                                        [{niveau en cours}, feuille]
+                                        [{ligne de statut}, feuille]
+                                        [{boutons de commande}, feuille]
+                                    ]
+                            ]
+                    ]
+            ]
+    \end{forest}
+    \caption{Arbre des composants de la fenêtre principale. Les nœuds intermédiaires sont
+        des boîtes (\code{GtkBox}). La barre d'infos ouvre les règles et la présentation ; chaque flotte réunit un titre, une grille de cent
+        boutons encadrée par ses coordonnées, et un score.}
+    \label{fig-widgets}
 \end{figure}
 
 \subsection{Un bouton doit savoir qui il est}
 
 Cent boutons partagent la même fonction de rappel ; chacun doit lui indiquer \emph{quelle
-case} il représente. Le cours résout ce problème pour le jeu du trésor en associant à chaque
+    case} il représente. Le cours résout ce problème pour le jeu du trésor en associant à chaque
 bouton une petite structure qui regroupe un pointeur vers le parent et l'identifiant de la
 boîte. Le projet reprend ce patron tel quel (\cref{lst-contexte}).
 
@@ -102,10 +102,10 @@ d'abord son contexte et peut ignorer le widget émetteur. Elle ne fait qu'une ch
 \subsection{L'apparence est déclarée, pas programmée}
 
 \begin{attention}
-Dans la version~1, chaque libellé recevait son propre fournisseur de style, créé par le
-code C : 27~appels à \code{gtk\_css\_provider\_new()}, dont plusieurs jamais libérés. Chaque
-changement d'état d'une case chargeait une nouvelle image depuis le disque, par un chemin
-relatif qui ne fonctionnait que depuis le dossier du programme.
+    Dans la version~1, chaque libellé recevait son propre fournisseur de style, créé par le
+    code C : 27~appels à \code{gtk\_css\_provider\_new()}, dont plusieurs jamais libérés. Chaque
+    changement d'état d'une case chargeait une nouvelle image depuis le disque, par un chemin
+    relatif qui ne fonctionnait que depuis le dossier du programme.
 \end{attention}
 
 Dans la version~2, le code C n'attribue aux widgets que des \emph{noms de classe}. Montrer
@@ -179,10 +179,10 @@ imperceptibles.
 \subsection{Le tour de l'ordinateur : un tir par tic}
 
 \begin{attention}
-Dans la version~1, tout le tour de l'ordinateur --- parfois une longue série de coups au
-but --- se déroulait à l'intérieur de la fonction appelée par le clic du joueur. La boucle
-d'événements étant suspendue pendant ce temps, la fenêtre ne pouvait pas se redessiner : le
-joueur voyait le résultat final d'un coup, sans les tirs intermédiaires.
+    Dans la version~1, tout le tour de l'ordinateur --- parfois une longue série de coups au
+    but --- se déroulait à l'intérieur de la fonction appelée par le clic du joueur. La boucle
+    d'événements étant suspendue pendant ce temps, la fenêtre ne pouvait pas se redessiner : le
+    joueur voyait le résultat final d'un coup, sans les tirs intermédiaires.
 \end{attention}
 
 Le modèle exécutant un pas par appel, le contrôleur peut rendre la main à GTK entre deux
@@ -192,37 +192,37 @@ lui de jouer (\cref{fig-sequence}). Le joueur voit chaque tir tomber, et l'inter
 fige jamais (exigence~C7).
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[
-      acteur/.style={boite, minimum width=2.5cm, font=\sffamily\small\bfseries},
-      msg/.style={->, line width=0.6pt, draw=marine},
-      ret/.style={->, line width=0.6pt, draw=ardoise, dashed},
-      lbl/.style={font=\sffamily\scriptsize, above, inner sep=1.5pt},
-      lblb/.style={font=\sffamily\scriptsize, below, inner sep=1.5pt, text=ardoise}]
-    \node[acteur] (j) at (0,0) {Joueur};
-    \node[acteur, fill=ecume] (v) at (3.7,0) {Vue};
-    \node[acteur, fill=ecume] (c) at (7.4,0) {Contrôleur};
-    \node[acteur, coeur] (m) at (11.1,0) {Modèle};
-    \foreach \n in {j,v,c,m} \draw[ardoise!60, line width=0.5pt] (\n.south) -- ++(0,-7.9);
+    \centering
+    \begin{tikzpicture}[
+            acteur/.style={boite, minimum width=2.5cm, font=\sffamily\small\bfseries},
+            msg/.style={->, line width=0.6pt, draw=marine},
+            ret/.style={->, line width=0.6pt, draw=ardoise, dashed},
+            lbl/.style={font=\sffamily\scriptsize, above, inner sep=1.5pt},
+            lblb/.style={font=\sffamily\scriptsize, below, inner sep=1.5pt, text=ardoise}]
+        \node[acteur] (j) at (0,0) {Joueur};
+        \node[acteur, fill=ecume] (v) at (3.7,0) {Vue};
+        \node[acteur, fill=ecume] (c) at (7.4,0) {Contrôleur};
+        \node[acteur, coeur] (m) at (11.1,0) {Modèle};
+        \foreach \n in {j,v,c,m} \draw[ardoise!60, line width=0.5pt] (\n.south) -- ++(0,-7.9);
 
-    \draw[msg] (0,-1.0) -- node[lbl] {clic sur C4} (3.7,-1.0);
-    \draw[msg] (3.7,-1.7) -- node[lbl] {\texttt{cell\_activated(C4)}} (7.4,-1.7);
-    \draw[msg] (7.4,-2.4) -- node[lbl] {\texttt{bs\_game\_human\_fire(C4)}} (11.1,-2.4);
-    \draw[ret] (11.1,-3.1) -- node[lblb] {manqué, tour de l'ordinateur} (7.4,-3.1);
-    \draw[msg] (7.4,-3.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-3.9);
-    \draw[msg] (7.4,-4.5) to[out=0, in=0, looseness=3.5] node[right, font=\sffamily\scriptsize]
-      {minuterie 550 ms} (7.4,-5.1);
+        \draw[msg] (0,-1.0) -- node[lbl] {clic sur C4} (3.7,-1.0);
+        \draw[msg] (3.7,-1.7) -- node[lbl] {\texttt{cell\_activated(C4)}} (7.4,-1.7);
+        \draw[msg] (7.4,-2.4) -- node[lbl] {\texttt{bs\_game\_human\_fire(C4)}} (11.1,-2.4);
+        \draw[ret] (11.1,-3.1) -- node[lblb] {manqué, tour de l'ordinateur} (7.4,-3.1);
+        \draw[msg] (7.4,-3.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-3.9);
+        \draw[msg] (7.4,-4.5) to[out=0, in=0, looseness=3.5] node[right, font=\sffamily\scriptsize]
+        {minuterie 550 ms} (7.4,-5.1);
 
-    \draw[ardoise!50, dashed] (-1.3,-5.5) -- (12.4,-5.5);
-    \node[note, anchor=west, fill=white, inner sep=1.5pt] at (0.25,-5.5)
-      {plus tard, depuis la boucle d'événements};
+        \draw[ardoise!50, dashed] (-1.3,-5.5) -- (12.4,-5.5);
+        \node[note, anchor=west, fill=white, inner sep=1.5pt] at (0.25,-5.5)
+        {plus tard, depuis la boucle d'événements};
 
-    \draw[msg] (7.4,-6.5) -- node[lbl] {\texttt{bs\_game\_computer\_fire()}} (11.1,-6.5);
-    \draw[ret] (11.1,-7.2) -- node[lblb] {touché, l'ordinateur rejoue} (7.4,-7.2);
-    \draw[msg] (7.4,-7.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-7.9);
-  \end{tikzpicture}
-  \caption{Séquence d'un tir du joueur suivi d'un tir de l'ordinateur.}
-  \label{fig-sequence}
+        \draw[msg] (7.4,-6.5) -- node[lbl] {\texttt{bs\_game\_computer\_fire()}} (11.1,-6.5);
+        \draw[ret] (11.1,-7.2) -- node[lblb] {touché, l'ordinateur rejoue} (7.4,-7.2);
+        \draw[msg] (7.4,-7.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-7.9);
+    \end{tikzpicture}
+    \caption{Séquence d'un tir du joueur suivi d'un tir de l'ordinateur.}
+    \label{fig-sequence}
 \end{figure}
 
 \subsection{Une fin de partie qui ne bloque pas}
@@ -233,9 +233,9 @@ d'événements imbriquée : la réponse arrive par le signal \enquote{response},
 quel autre événement, puis par l'intention \code{game\_over\_answered}.
 
 \begin{attention}
-Le bouton \enquote{redémarrer} de la version~1 appelait \code{gtk\_main()} depuis une
-fonction de rappel : chaque nouvelle partie empilait une boucle d'événements de plus sur
-les précédentes. La version~2 n'en a qu'une, celle de \code{GtkApplication}.
+    Le bouton \enquote{redémarrer} de la version~1 appelait \code{gtk\_main()} depuis une
+    fonction de rappel : chaque nouvelle partie empilait une boucle d'événements de plus sur
+    les précédentes. La version~2 n'en a qu'une, celle de \code{GtkApplication}.
 \end{attention}
 
 \section{Deux capacités facultatives}

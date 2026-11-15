@@ -48,32 +48,32 @@ L'état public d'une case prend l'une des cinq valeurs du \cref{tab-etats}. La c
 sous la forme d'un drapeau posé sur un bouton.
 
 \begin{table}[ht]
-  \centering
-  \begin{tabularx}{\textwidth}{@{}lX@{}}
-    \toprule
-    \textbf{État} & \textbf{Signification pour l'attaquant} \\
-    \midrule
-    \code{BS\_CELL\_UNKNOWN}  & Jamais visée, rien n'est connu. \\
-    \code{BS\_CELL\_MISS}     & Visée : de l'eau. \\
-    \code{BS\_CELL\_HIT}      & Visée : pont d'un bateau encore à flot. \\
-    \code{BS\_CELL\_SUNK}     & Visée : pont d'un bateau coulé. \\
-    \code{BS\_CELL\_EXCLUDED} & Non visée, mais \emph{prouvée} vide par la règle de
-                                non-contact. \\
-    \bottomrule
-  \end{tabularx}
-  \caption{États publics d'une case.}
-  \label{tab-etats}
+    \centering
+    \begin{tabularx}{\textwidth}{@{}lX@{}}
+        \toprule
+        \textbf{État}             & \textbf{Signification pour l'attaquant}             \\
+        \midrule
+        \code{BS\_CELL\_UNKNOWN}  & Jamais visée, rien n'est connu.                     \\
+        \code{BS\_CELL\_MISS}     & Visée : de l'eau.                                   \\
+        \code{BS\_CELL\_HIT}      & Visée : pont d'un bateau encore à flot.             \\
+        \code{BS\_CELL\_SUNK}     & Visée : pont d'un bateau coulé.                     \\
+        \code{BS\_CELL\_EXCLUDED} & Non visée, mais \emph{prouvée} vide par la règle de
+        non-contact.                                                                    \\
+        \bottomrule
+    \end{tabularx}
+    \caption{États publics d'une case.}
+    \label{tab-etats}
 \end{table}
 
 \begin{retenir}[Invariants du plateau]
-Toutes les fonctions du module préservent trois propriétés, que les tests de propriétés
-revérifient après chaque tir de \num{2250} parties (\cref{sec-proprietes}) :
-\begin{itemize}
-  \item les bateaux ne se chevauchent pas, ne se touchent pas et ne sortent pas du plateau ;
-  \item \code{decks\_afloat} est égal au nombre de ponts non encore touchés ;
-  \item une case est \code{SUNK} si et seulement si elle appartient à un bateau dont tous
-        les ponts sont touchés.
-\end{itemize}
+    Toutes les fonctions du module préservent trois propriétés, que les tests de propriétés
+    revérifient après chaque tir de \num{2250} parties (\cref{sec-proprietes}) :
+    \begin{itemize}
+        \item les bateaux ne se chevauchent pas, ne se touchent pas et ne sortent pas du plateau ;
+        \item \code{decks\_afloat} est égal au nombre de ponts non encore touchés ;
+        \item une case est \code{SUNK} si et seulement si elle appartient à un bateau dont tous
+              les ponts sont touchés.
+    \end{itemize}
 \end{retenir}
 
 \subsection{Aucune allocation dynamique}
@@ -101,19 +101,19 @@ de 100 cases et deux orientations donnent au plus 200 candidats : l'énumératio
 immédiate, et l'algorithme ne dépend plus de la chance pour terminer.
 
 \begin{algorithm}[ht]
-  \caption{Placement aléatoire d'une flotte}
-  \label{alg-placement}
-  \KwIn{un générateur aléatoire $g$}
-  \KwOut{un plateau portant les dix bateaux, sans contact}
-  \Repeat{la flotte est complète}{
-    vider le plateau\;
-    \ForEach{longueur $\ell$ de la flotte, dans l'ordre $4, 3, 3, 2, 2, 2, 1, 1, 1, 1$}{
-      $P \gets$ ensemble des couples (origine, orientation) où un bateau de longueur $\ell$
-      tient sans toucher un bateau déjà placé\;
-      \lIf{$P = \emptyset$}{abandonner cette tentative \Com*[f]{impasse}}
-      choisir $p \in P$ uniformément avec $g$ et placer le bateau en $p$\;
+    \caption{Placement aléatoire d'une flotte}
+    \label{alg-placement}
+    \KwIn{un générateur aléatoire $g$}
+    \KwOut{un plateau portant les dix bateaux, sans contact}
+    \Repeat{la flotte est complète}{
+        vider le plateau\;
+        \ForEach{longueur $\ell$ de la flotte, dans l'ordre $4, 3, 3, 2, 2, 2, 1, 1, 1, 1$}{
+            $P \gets$ ensemble des couples (origine, orientation) où un bateau de longueur $\ell$
+            tient sans toucher un bateau déjà placé\;
+            \lIf{$P = \emptyset$}{abandonner cette tentative \Com*[f]{impasse}}
+            choisir $p \in P$ uniformément avec $g$ et placer le bateau en $p$\;
+        }
     }
-  }
 \end{algorithm}
 
 Le test \enquote{tient sans toucher} est une simple inspection : on parcourt le rectangle
@@ -134,36 +134,36 @@ Un tir met à jour l'historique public puis les \emph{déductions} que la règle
 non-contact autorise (\cref{fig-deductions}) :
 
 \begin{itemize}
-  \item \textbf{touché} --- les quatre voisines diagonales de la case sont de l'eau, car
-        un bateau est droit et aucun autre ne peut le frôler ;
-  \item \textbf{coulé} --- toute la ceinture du bateau est de l'eau.
+    \item \textbf{touché} --- les quatre voisines diagonales de la case sont de l'eau, car
+          un bateau est droit et aucun autre ne peut le frôler ;
+    \item \textbf{coulé} --- toute la ceinture du bateau est de l'eau.
 \end{itemize}
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[scale=0.62]
-    % ----------------------------------------------------- (a) après un coup au but
-    \begin{scope}
-      \plateau{7}
-      \fill[ocean!25] (2,3) rectangle (5,4);
-      \draw[ocean, dashed, line width=0.6pt, rounded corners=1.5pt] (2.1,3.1) rectangle (4.9,3.9);
-      \fill[corail] (3.5,3.5) circle (0.24);
-      \foreach \x/\y in {2/2, 4/2, 2/4, 4/4} {\drapeau{\x}{\y}}
-      \node[note] at (3.5,-0.8) {(a) touché :\\4 cases exclues};
-    \end{scope}
-    % ------------------------------------------------------ (b) après le naufrage
-    \begin{scope}[xshift=9.5cm]
-      \plateau{7}
-      \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
-      \foreach \x in {2,3,4} \fill[corail] (\x+0.5,3.5) circle (0.2);
-      \foreach \x in {1,...,5} { \drapeau{\x}{2} \drapeau{\x}{4} }
-      \drapeau{1}{3} \drapeau{5}{3}
-      \node[note] at (3.5,-0.8) {(b) coulé :\\12 cases exclues};
-    \end{scope}
-  \end{tikzpicture}
-  \caption{Déductions tirées d'un tir. Les croix marquent les cases que le moteur classe
-           \code{EXCLUDED} ; en (a) le reste du bateau, en pointillé, est encore inconnu.}
-  \label{fig-deductions}
+    \centering
+    \begin{tikzpicture}[scale=0.62]
+        % ----------------------------------------------------- (a) après un coup au but
+        \begin{scope}
+            \plateau{7}
+            \fill[ocean!25] (2,3) rectangle (5,4);
+            \draw[ocean, dashed, line width=0.6pt, rounded corners=1.5pt] (2.1,3.1) rectangle (4.9,3.9);
+            \fill[corail] (3.5,3.5) circle (0.24);
+            \foreach \x/\y in {2/2, 4/2, 2/4, 4/4} {\drapeau{\x}{\y}}
+            \node[note] at (3.5,-0.8) {(a) touché :\\4 cases exclues};
+        \end{scope}
+        % ------------------------------------------------------ (b) après le naufrage
+        \begin{scope}[xshift=9.5cm]
+            \plateau{7}
+            \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+            \foreach \x in {2,3,4} \fill[corail] (\x+0.5,3.5) circle (0.2);
+            \foreach \x in {1,...,5} { \drapeau{\x}{2} \drapeau{\x}{4} }
+            \drapeau{1}{3} \drapeau{5}{3}
+            \node[note] at (3.5,-0.8) {(b) coulé :\\12 cases exclues};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{Déductions tirées d'un tir. Les croix marquent les cases que le moteur classe
+        \code{EXCLUDED} ; en (a) le reste du bateau, en pointillé, est encore inconnu.}
+    \label{fig-deductions}
 \end{figure}
 
 Ces déductions sont calculées \emph{par le modèle}, au moment du tir, et non par chaque
@@ -198,24 +198,24 @@ Le module \code{game} réunit deux plateaux, le niveau de l'adversaire, le score
 Son comportement est celui de l'automate de la \cref{fig-automate}.
 
 \begin{figure}[ht]
-  \centering
-  \begin{tikzpicture}[node distance=30mm,
-      etat/.style={boite, minimum width=3.0cm, minimum height=1.0cm, rounded corners=5mm}]
-    \node[etat, fill=ecume] (h) {Tour du joueur};
-    \node[etat, fill=ecume, right=of h] (c) {Tour de l'ordinateur};
-    \node[etat, coeur, below=18mm of $(h)!0.5!(c)$] (o) {Partie terminée};
-    \node[circle, fill=marine, inner sep=2.2pt, left=26mm of h] (start) {};
+    \centering
+    \begin{tikzpicture}[node distance=30mm,
+            etat/.style={boite, minimum width=3.0cm, minimum height=1.0cm, rounded corners=5mm}]
+        \node[etat, fill=ecume] (h) {Tour du joueur};
+        \node[etat, fill=ecume, right=of h] (c) {Tour de l'ordinateur};
+        \node[etat, coeur, below=18mm of $(h)!0.5!(c)$] (o) {Partie terminée};
+        \node[circle, fill=marine, inner sep=2.2pt, left=26mm of h] (start) {};
 
-    \draw[fleche] (start) -- node[above, note] {initialisation} (h);
-    \draw[fleche] (h) to[bend left=14] node[above, note] {manqué} (c);
-    \draw[fleche] (c) to[bend left=14] node[below, note] {manqué} (h);
-    \draw[fleche] (h) to[loop above, looseness=5] node[above, note] {touché} (h);
-    \draw[fleche] (c) to[loop above, looseness=5] node[above, note] {touché} (c);
-    \draw[fleche] (h) |- node[pos=0.25, left, note] {flotte adverse\\coulée} (o);
-    \draw[fleche] (c) |- node[pos=0.25, right, note] {flotte du joueur\\coulée} (o);
-  \end{tikzpicture}
-  \caption{L'automate d'une partie. Un coup au but laisse la main au tireur.}
-  \label{fig-automate}
+        \draw[fleche] (start) -- node[above, note] {initialisation} (h);
+        \draw[fleche] (h) to[bend left=14] node[above, note] {manqué} (c);
+        \draw[fleche] (c) to[bend left=14] node[below, note] {manqué} (h);
+        \draw[fleche] (h) to[loop above, looseness=5] node[above, note] {touché} (h);
+        \draw[fleche] (c) to[loop above, looseness=5] node[above, note] {touché} (c);
+        \draw[fleche] (h) |- node[pos=0.25, left, note] {flotte adverse\\coulée} (o);
+        \draw[fleche] (c) |- node[pos=0.25, right, note] {flotte du joueur\\coulée} (o);
+    \end{tikzpicture}
+    \caption{L'automate d'une partie. Un coup au but laisse la main au tireur.}
+    \label{fig-automate}
 \end{figure}
 
 Le principe de l'interface du module est qu'\textbf{un appel effectue un pas, et un seul},
@@ -253,11 +253,11 @@ générateur, \code{bs\_rng}, que l'appelant possède et initialise par une grai
 conséquences :
 
 \begin{itemize}
-  \item une graine rejoue une partie entière --- placement des deux flottes et tous les
-        coups de l'ordinateur ; c'est la condition pour qu'un test portant sur une
-        stratégie aléatoire soit déterministe ;
-  \item le résultat ne dépend pas de la bibliothèque C de la plate-forme, dont le
-        \code{rand()} varie d'un système à l'autre.
+    \item une graine rejoue une partie entière --- placement des deux flottes et tous les
+          coups de l'ordinateur ; c'est la condition pour qu'un test portant sur une
+          stratégie aléatoire soit déterministe ;
+    \item le résultat ne dépend pas de la bibliothèque C de la plate-forme, dont le
+          \code{rand()} varie d'un système à l'autre.
 \end{itemize}
 
 Le générateur est \emph{xoshiro256**}~\cite{blackman2021}, dont l'état de 256~bits est
