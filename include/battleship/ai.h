@@ -67,7 +67,8 @@ bs_status bs_ai_choose_target(bs_difficulty difficulty, const bs_knowledge *know
  * ship placements consistent with @p knowledge that cover it. Cells that
  * cannot be fired at score zero. Exposed for tests, tooling and visualisation.
  *
- * @param scores receives BS_CELL_COUNT values in row-major order.
+ * @param knowledge public view of the enemy board.
+ * @param scores    receives BS_CELL_COUNT values in row-major order.
  * @return the highest score written.
  */
 uint32_t bs_ai_density(const bs_knowledge *knowledge, uint32_t scores[BS_CELL_COUNT]);

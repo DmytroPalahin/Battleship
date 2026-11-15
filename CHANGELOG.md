@@ -15,6 +15,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The report builds without its two spurious warnings: a request to run BibTeX again, reported
   as undefined references although the bibliography was up to date, and a duplicate link
   target on the cover page.
+- The API reference describes every parameter, structure member and version macro it lists:
+  Doxygen reported 21 of them as undocumented.
 
 ## [2.2.0] - 2026-11-15
 

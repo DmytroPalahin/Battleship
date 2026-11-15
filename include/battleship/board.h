@@ -52,7 +52,7 @@ typedef struct bs_ship {
 
 /** One side's board. Zero-allocation; copy with plain assignment. */
 typedef struct bs_board {
-    bs_ship ships[BS_FLEET_SIZE];
+    bs_ship ships[BS_FLEET_SIZE];  /**< The fleet; entries [0, ship_count) are placed. */
     uint8_t ship_count;            /**< Ships placed so far. */
     uint8_t ships_afloat;          /**< Placed ships not yet sunk. */
     uint8_t decks_afloat;          /**< Deck cells not yet hit. */
@@ -69,9 +69,9 @@ typedef enum bs_shot_result {
 
 /** Everything a caller may want to know about a shot that was just fired. */
 typedef struct bs_shot_report {
-    bs_shot_result result;
-    int ship_index;       /**< Index of the ship hit, or BS_NO_SHIP. */
-    bool fleet_destroyed; /**< True when this shot sank the last ship. */
+    bs_shot_result result; /**< What the shot did: miss, hit or sunk. */
+    int ship_index;        /**< Index of the ship hit, or BS_NO_SHIP. */
+    bool fleet_destroyed;  /**< True when this shot sank the last ship. */
 } bs_shot_report;
 
 /**
@@ -130,6 +130,8 @@ bool bs_board_can_fire(const bs_board *board, bs_coord target);
 
 /**
  * Fires at a cell and updates the shot history and the derived exclusions.
+ * @param board  board that receives the shot.
+ * @param target cell fired at.
  * @param report optional; filled on success.
  * @return BS_OK, BS_ERR_INVALID_ARGUMENT, BS_ERR_OUT_OF_BOUNDS or
  *         BS_ERR_ALREADY_SHOT.

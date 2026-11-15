@@ -21,7 +21,7 @@ extern "C" {
 
 /** Generator state. Treat as opaque; initialise with bs_rng_seed(). */
 typedef struct bs_rng {
-    uint64_t s[4];
+    uint64_t s[4]; /**< The 256 bits of state. */
 } bs_rng;
 
 /** Initialises the generator. Any seed is valid, including zero. */
@@ -32,6 +32,7 @@ uint64_t bs_rng_next(bs_rng *rng);
 
 /**
  * Uniform integer in [0, bound), free of modulo bias.
+ * @param rng   generator to draw from.
  * @param bound must be greater than zero; a bound of zero yields zero.
  */
 uint32_t bs_rng_below(bs_rng *rng, uint32_t bound);

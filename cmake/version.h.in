@@ -7,9 +7,13 @@
 #ifndef BATTLESHIP_VERSION_H
 #define BATTLESHIP_VERSION_H
 
+/** Major version: raised by incompatible changes. */
 #define BS_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+/** Minor version: raised by compatible additions. */
 #define BS_VERSION_MINOR @PROJECT_VERSION_MINOR@
+/** Patch version: raised by corrections. */
 #define BS_VERSION_PATCH @PROJECT_VERSION_PATCH@
+/** The three numbers as one string, e.g. "2.0.0". */
 #define BS_VERSION_STRING "@PROJECT_VERSION@"
 
 #ifdef __cplusplus

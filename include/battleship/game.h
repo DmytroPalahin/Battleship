@@ -48,26 +48,28 @@ typedef struct bs_stats {
 
 /** What a single shot changed. */
 typedef struct bs_turn_report {
-    bs_player shooter;
-    bs_coord target;
-    bs_shot_result result;
-    bs_phase next_phase; /**< Phase after the shot. */
+    bs_player shooter;     /**< Side that fired. */
+    bs_coord target;       /**< Cell fired at. */
+    bs_shot_result result; /**< What the shot did: miss, hit or sunk. */
+    bs_phase next_phase;   /**< Phase after the shot. */
 } bs_turn_report;
 
 /** A match. Zero-allocation; initialise with bs_game_init(). */
 typedef struct bs_game {
     bs_board boards[BS_PLAYER_COUNT]; /**< boards[p] is the fleet owned by p. */
     bs_stats stats[BS_PLAYER_COUNT];  /**< stats[p] counts the shots fired by p. */
-    bs_difficulty difficulty;
-    bs_phase phase;
-    bs_player winner; /**< Meaningful only when phase is BS_PHASE_OVER. */
-    bs_rng rng;
+    bs_difficulty difficulty;         /**< Level of the computer opponent. */
+    bs_phase phase;                   /**< Whose move it is, or BS_PHASE_OVER. */
+    bs_player winner;                 /**< Meaningful only when phase is BS_PHASE_OVER. */
+    bs_rng rng;                       /**< Draws the fleets and the computer's choices. */
 } bs_game;
 
 /**
  * Starts a new match: both fleets are placed at random and the human is to
  * move.
- * @param seed any value; equal seeds and inputs replay the same match.
+ * @param game       match to set up; whatever it held is overwritten.
+ * @param difficulty level of the computer opponent.
+ * @param seed       any value; equal seeds and inputs replay the same match.
  * @return BS_OK, BS_ERR_INVALID_ARGUMENT or BS_ERR_PLACEMENT_FAILED.
  */
 bs_status bs_game_init(bs_game *game, bs_difficulty difficulty, uint64_t seed);
@@ -102,6 +104,8 @@ bs_status bs_game_reshuffle(bs_game *game);
 
 /**
  * The human fires at the computer's board.
+ * @param game   match in which it is the human's turn.
+ * @param target cell of the computer's board.
  * @param report optional; filled on success.
  * @return BS_OK, BS_ERR_INVALID_ARGUMENT, BS_ERR_WRONG_PHASE,
  *         BS_ERR_OUT_OF_BOUNDS or BS_ERR_ALREADY_SHOT. The game is unchanged
@@ -111,6 +115,7 @@ bs_status bs_game_human_fire(bs_game *game, bs_coord target, bs_turn_report *rep
 
 /**
  * The computer fires one shot at the human's board, chosen by its AI.
+ * @param game   match in which it is the computer's turn.
  * @param report optional; filled on success.
  * @return BS_OK, BS_ERR_INVALID_ARGUMENT or BS_ERR_WRONG_PHASE.
  */

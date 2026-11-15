@@ -44,8 +44,8 @@ const char *bs_status_str(bs_status status);
 
 /** A cell position. Row 0 is the top row, column 0 the leftmost column. */
 typedef struct bs_coord {
-    int row;
-    int col;
+    int row; /**< Row, 0 at the top. */
+    int col; /**< Column, 0 on the left. */
 } bs_coord;
 
 /** Direction in which a ship extends from its origin. */
