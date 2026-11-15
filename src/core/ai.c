@@ -53,7 +53,8 @@ static int collect(const bs_knowledge *knowledge, bool unknown, bool excluded,
 static bs_status choose_easy(const bs_knowledge *knowledge, bs_rng *rng, bs_coord *target)
 {
     int cells[BS_CELL_COUNT];
-    return pick(cells, collect(knowledge, true, true, cells), rng, target);
+    const int count = collect(knowledge, true, true, cells);
+    return pick(cells, count, rng, target);
 }
 
 /* ------------------------------------------------------------------- medium */
@@ -179,7 +180,9 @@ static bs_status choose_hard(const bs_knowledge *knowledge, bs_rng *rng, bs_coor
         return choose_medium(knowledge, rng, target);
     }
 
-    int cells[BS_CELL_COUNT];
+    /* Zeroed for the analysers: `best` is the highest score, so at least one
+     * cell matches below, but nothing in this function shows it. */
+    int cells[BS_CELL_COUNT] = {0};
     int count = 0;
     for (int index = 0; index < BS_CELL_COUNT; index++) {
         if (scores[index] == best) {

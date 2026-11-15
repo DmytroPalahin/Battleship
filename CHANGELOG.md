@@ -7,6 +7,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `make lint` finds the clang-tidy that Homebrew installs outside the `PATH`, names the tool
+  that is missing instead of failing on it, and analyses only the files the build compiles
+  (without GStreamer, `audio_gst.c` is not one of them).
+- The clang-tidy profile also passes with LLVM 23, which renamed an option and added a check.
+- cppcheck 2.22 no longer reports an uninitialised array in the computer's choice of a target.
+  The memory was never read; the two functions are now written so that an analyser sees it.
+
 ## [2.1.1] - 2026-11-14
 
 ### Fixed

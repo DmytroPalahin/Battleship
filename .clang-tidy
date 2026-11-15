@@ -18,12 +18,15 @@ Checks: >
   readability-misleading-indentation,
   readability-redundant-control-flow,
   -bugprone-easily-swappable-parameters,
+  -bugprone-signed-bitwise,
   -cert-err33-c,
   -clang-analyzer-optin.core.EnumCastOutOfRange,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   -misc-include-cleaner
 
 # bugprone-easily-swappable-parameters: (row, col) pairs are the domain.
+# bugprone-signed-bitwise (LLVM 23): GTK flags are enums combined with | and &,
+#   and the check also objects to a literal shift count such as `x >> 32`.
 # cert-err33-c: flags every unchecked printf().
 # ...EnumCastOutOfRange: GTK and GStreamer flags are enums combined with |.
 # ...DeprecatedOrUnsafeBufferHandling: asks for the optional Annex K (memset_s).
@@ -34,10 +37,16 @@ HeaderFilterRegex: '(include/battleship|src|tests)/.*'
 FormatStyle: file
 CheckOptions:
   # int8_t is used as a small integer (a ship index), never as a character.
-  # The check has two names; each reads its own options.
+  # The check has two names; each reads its own options. The option was
+  # misspelt "Typdefs" until LLVM 23 corrected it: both spellings are given so
+  # that every version of clang-tidy finds the one it knows.
   - key: bugprone-signed-char-misuse.CharTypdefsToIgnore
     value: 'int8_t'
+  - key: bugprone-signed-char-misuse.CharTypedefsToIgnore
+    value: 'int8_t'
   - key: cert-str34-c.CharTypdefsToIgnore
+    value: 'int8_t'
+  - key: cert-str34-c.CharTypedefsToIgnore
     value: 'int8_t'
   - key: readability-braces-around-statements.ShortStatementLines
     value: '0'

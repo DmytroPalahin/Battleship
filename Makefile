@@ -8,6 +8,11 @@ BUILD    = build/$(PRESET)
 JOBS    ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
 SOURCES  = $(shell git ls-files '*.c' '*.h')
 
+# Homebrew installs LLVM without putting it on the PATH: look there as well.
+CLANG_TIDY ?= $(firstword $(shell command -v clang-tidy 2>/dev/null) \
+                $(wildcard /opt/homebrew/opt/llvm/bin/clang-tidy /usr/local/opt/llvm/bin/clang-tidy))
+CPPCHECK   ?= $(shell command -v cppcheck 2>/dev/null)
+
 .DEFAULT_GOAL := help
 .PHONY: help configure build test run play simulate format format-check lint asan coverage \
         report docs assets package clean
@@ -43,9 +48,15 @@ format: ## Reformat the sources in place
 format-check: ## Fail if a source file is not formatted
 	clang-format --dry-run --Werror $(SOURCES)
 
+# clang-tidy is given only the files this build compiles: without GStreamer,
+# audio_gst.c is left out of the build and its headers are not installed.
 lint: build ## Static analysis with clang-tidy and cppcheck
-	clang-tidy -p $(BUILD) --quiet $(shell git ls-files 'src/*.c')
-	cppcheck --std=c11 --enable=warning,performance,portability --inline-suppr \
+	@test -n "$(CLANG_TIDY)" || { echo "make lint: clang-tidy not found (macOS: brew install llvm; Debian: apt install clang-tidy)" >&2; exit 1; }
+	git ls-files 'src/*.c' | while read -r file; do \
+		if grep -qF "/$$file\"" $(BUILD)/compile_commands.json; then echo "$$file"; fi; \
+	done | xargs $(CLANG_TIDY) -p $(BUILD) --quiet
+	@test -n "$(CPPCHECK)" || { echo "make lint: cppcheck not found (macOS: brew install cppcheck; Debian: apt install cppcheck)" >&2; exit 1; }
+	$(CPPCHECK) --std=c11 --enable=warning,performance,portability --inline-suppr \
 		--error-exitcode=1 --quiet -I include -I $(BUILD)/generated src/core src/cli
 
 asan: ## Build and test under AddressSanitizer and UBSan
