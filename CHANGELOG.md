@@ -7,6 +7,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `make coverage` and `make docs` name the tool that is missing (gcovr, Doxygen) before doing
+  anything else. `make docs` used to configure the build tree first, which left that tree
+  unable to configure again, for `make build` and `make test` too, until Doxygen was installed.
+
 ## [2.2.0] - 2026-11-15
 
 ### Added

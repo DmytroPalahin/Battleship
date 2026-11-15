@@ -12,6 +12,8 @@ SOURCES  = $(shell git ls-files '*.c' '*.h')
 CLANG_TIDY ?= $(firstword $(shell command -v clang-tidy 2>/dev/null) \
                 $(wildcard /opt/homebrew/opt/llvm/bin/clang-tidy /usr/local/opt/llvm/bin/clang-tidy))
 CPPCHECK   ?= $(shell command -v cppcheck 2>/dev/null)
+GCOVR      ?= $(shell command -v gcovr 2>/dev/null)
+DOXYGEN    ?= $(shell command -v doxygen 2>/dev/null)
 
 .DEFAULT_GOAL := help
 .PHONY: help configure build test run play simulate format format-check lint asan coverage \
@@ -63,14 +65,18 @@ asan: ## Build and test under AddressSanitizer and UBSan
 	$(MAKE) test PRESET=asan
 
 coverage: ## Test coverage of the engine (needs gcovr)
+	@test -n "$(GCOVR)" || { echo "make coverage: gcovr not found (macOS: brew install gcovr; Debian: apt install gcovr)" >&2; exit 1; }
 	$(MAKE) test PRESET=coverage
-	gcovr --root . --filter src/core --filter include build/coverage --print-summary \
+	$(GCOVR) --root . --filter src/core --filter include build/coverage --print-summary \
 		--fail-under-line 95
 
 report: ## Build the report, in French and in English (docs/report/build/)
 	cd docs/report && latexmk
 
+# Checked before configuring: a build tree configured with the documentation
+# switched on does not configure again until Doxygen is there.
 docs: ## Generate the API reference with Doxygen (docs/api/)
+	@test -n "$(DOXYGEN)" || { echo "make docs: doxygen not found (macOS: brew install doxygen; Debian: apt install doxygen)" >&2; exit 1; }
 	cmake --preset $(PRESET) -DBATTLESHIP_BUILD_DOCS=ON
 	cmake --build --preset $(PRESET) --target docs
 
