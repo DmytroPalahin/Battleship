@@ -16,7 +16,11 @@
 
 \begin{document}
 
+% The cover page and the first page of chapter 1 are both numbered 1: without an
+% anchor, the cover page does not take the target of the links to the other.
+\hypersetup{pageanchor=false}
 \input{en/titlepage}
+\hypersetup{pageanchor=true}
 
 \pagenumbering{roman}
 \input{en/00-abstract}

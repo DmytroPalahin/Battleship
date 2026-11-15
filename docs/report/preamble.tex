@@ -152,6 +152,11 @@
 % Le moteur BibTeX suffit pour une dizaine de références et évite de dépendre de biber.
 \usepackage[backend=bibtex, style=numeric, sorting=none, maxbibnames=6]{biblatex}
 \addbibresource{references.bib}
+% Avec le tri « none », biblatex compare l'ordre des citations à celui de la passe
+% précédente, que le moteur BibTeX ne recharge jamais : chaque compilation se terminait par
+% « Please (re)run BibTeX » et « There were undefined references » alors que la
+% bibliographie était à jour. latexmk relance BibTeX de lui-même quand les citations changent.
+\csundef{blx@sortingtemplate@citeorder@relevant@none}
 
 % -------------------------------------------------------------------- liens
 \usepackage[colorlinks=true, linkcolor=marine, urlcolor=ocean, citecolor=ocean,

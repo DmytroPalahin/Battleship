@@ -15,7 +15,11 @@
 
 \begin{document}
 
+% La couverture et la première page du chapitre 1 portent toutes deux le numéro 1 :
+% sans ancre, la couverture ne prend pas la cible des liens vers l'autre.
+\hypersetup{pageanchor=false}
 \input{fr/titlepage}
+\hypersetup{pageanchor=true}
 
 \pagenumbering{roman}
 \input{fr/00-resume}
