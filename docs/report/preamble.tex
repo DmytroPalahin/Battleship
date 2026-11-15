@@ -3,9 +3,21 @@
 % ===========================================================================
 
 % ------------------------------------------------------------------ langue
+% Le rapport existe en deux éditions, française et anglaise, qui partagent ce
+% préambule. Chaque fichier principal choisit la sienne avant de le charger,
+% par \anglaistrue ou \anglaisfalse ; \selonlangue{français}{anglais} donne
+% ensuite le texte qui convient.
+\newcommand{\selonlangue}[2]{\ifanglais #2\else #1\fi}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[french]{babel}
+\ifanglais
+    \usepackage[british]{babel}
+    % Les noms de fonctions en police fixe ne se coupent pas ; l'anglais, sans espaces
+    % insécables avant la ponctuation, a moins de marge que le français pour les loger.
+    \emergencystretch=1.5em
+\else
+    \usepackage[french]{babel}
+\fi
 \usepackage[autostyle=true]{csquotes}
 
 % ----------------------------------------------------------------- polices
@@ -22,7 +34,11 @@
 \usepackage{array, booktabs, tabularx, multirow}
 \usepackage{caption, subcaption}
 \usepackage{float}
-\usepackage[locale=FR, group-minimum-digits=4]{siunitx}
+\ifanglais
+    \usepackage[locale=UK, group-separator={,}, group-minimum-digits=4]{siunitx}
+\else
+    \usepackage[locale=FR, group-minimum-digits=4]{siunitx}
+\fi
 
 % ----------------------------------------------------------------- couleurs
 \usepackage[table]{xcolor}
@@ -73,12 +89,16 @@
             bs_difficulty, bs_player, bs_cell_look, bs_turn_report, gpointer,
             bs_phase, bs_orientation, bs_view_choice, cell_context,
             GtkWidget, gboolean}}
-\renewcommand{\lstlistingname}{Extrait}
-\renewcommand{\lstlistlistingname}{Table des extraits de code}
+\renewcommand{\lstlistingname}{\selonlangue{Extrait}{Listing}}
+\renewcommand{\lstlistlistingname}{\selonlangue{Table des extraits de code}{List of listings}}
 \newcommand{\code}[1]{\texttt{\small #1}}
 
 % --------------------------------------------------------------- algorithmes
-\usepackage[french, ruled, vlined, linesnumbered]{algorithm2e}
+\ifanglais
+    \usepackage[ruled, vlined, linesnumbered]{algorithm2e}
+\else
+    \usepackage[french, ruled, vlined, linesnumbered]{algorithm2e}
+\fi
 \SetKwComment{Com}{$\triangleright$\ }{}
 \SetCommentSty{textit}
 \SetAlFnt{\small}
@@ -86,14 +106,14 @@
 
 % ------------------------------------------------------------------ encadrés
 \usepackage[most]{tcolorbox}
-\newtcolorbox{retenir}[1][À retenir]{
+\newtcolorbox{retenir}[1][\selonlangue{À retenir}{Key point}]{
     enhanced, colback=ecume, colframe=ocean, coltitle=white,
     fonttitle=\sffamily\bfseries\small, title={#1},
     boxrule=0pt, leftrule=3pt, arc=1.5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
     attach boxed title to top left={yshift=-2mm, xshift=3mm},
     boxed title style={colback=ocean, arc=1.5pt, boxrule=0pt, left=4pt, right=4pt}
 }
-\newtcolorbox{attention}[1][Défaut de la version 1]{
+\newtcolorbox{attention}[1][\selonlangue{Défaut de la version 1}{Defect of version 1}]{
     enhanced, colback=sable, colframe=corail, coltitle=white,
     fonttitle=\sffamily\bfseries\small, title={#1},
     boxrule=0pt, leftrule=3pt, arc=1.5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
@@ -114,7 +134,8 @@
 
 % ------------------------------------------------------- en-têtes et pieds
 \clearpairofpagestyles
-\ihead{\small\sffamily\color{ardoise}Bataille Navale --- rapport de projet}
+\ihead{\small\sffamily\color{ardoise}%
+    \selonlangue{Bataille Navale --- rapport de projet}{Battleship --- project report}}
 \ohead{\small\sffamily\color{ardoise}\leftmark}
 \cfoot{\small\sffamily\color{ardoise}\pagemark}
 \KOMAoptions{headsepline=0.4pt}
@@ -134,17 +155,30 @@
 
 % -------------------------------------------------------------------- liens
 \usepackage[colorlinks=true, linkcolor=marine, urlcolor=ocean, citecolor=ocean,
-    pdftitle={Bataille Navale --- rapport de projet},
-    pdfauthor={Dmytro Palahin, Ivanna Makam},
-    pdfsubject={Jeu de bataille navale en C11 et GTK 3},
-    pdfkeywords={C11, GTK 3, MVC, bataille navale, intégration continue}]{hyperref}
-\usepackage[french, nameinlink, noabbrev]{cleveref}
-% Les noms propres au document sont posés après ceux que cleveref installe pour le français.
-\newcommand{\nomsdesrenvois}{%
-    \crefname{lstlisting}{extrait}{extraits}\Crefname{lstlisting}{Extrait}{Extraits}%
-    \crefname{listing}{extrait}{extraits}\Crefname{listing}{Extrait}{Extraits}%
-    \crefname{algocf}{algorithme}{algorithmes}\Crefname{algocf}{Algorithme}{Algorithmes}}
-\addto\extrasfrench{\nomsdesrenvois}
+    pdfauthor={Dmytro Palahin, Ivanna Makam}]{hyperref}
+% Les noms propres au document sont posés après ceux que cleveref installe pour la langue.
+\ifanglais
+    \hypersetup{pdftitle={Battleship --- project report},
+        pdfsubject={A Battleship game in C11 and GTK 3},
+        pdfkeywords={C11, GTK 3, MVC, Battleship, continuous integration}}
+    % cleveref ne connaît pas « british » : ses noms anglais sont sous « english ».
+    \usepackage[english, nameinlink, noabbrev, capitalise]{cleveref}
+    \newcommand{\nomsdesrenvois}{%
+        \crefname{lstlisting}{Listing}{Listings}\Crefname{lstlisting}{Listing}{Listings}%
+        \crefname{listing}{Listing}{Listings}\Crefname{listing}{Listing}{Listings}%
+        \crefname{algocf}{Algorithm}{Algorithms}\Crefname{algocf}{Algorithm}{Algorithms}}
+    \addto\extrasbritish{\nomsdesrenvois}
+\else
+    \hypersetup{pdftitle={Bataille Navale --- rapport de projet},
+        pdfsubject={Jeu de bataille navale en C11 et GTK 3},
+        pdfkeywords={C11, GTK 3, MVC, bataille navale, intégration continue}}
+    \usepackage[french, nameinlink, noabbrev]{cleveref}
+    \newcommand{\nomsdesrenvois}{%
+        \crefname{lstlisting}{extrait}{extraits}\Crefname{lstlisting}{Extrait}{Extraits}%
+        \crefname{listing}{extrait}{extraits}\Crefname{listing}{Extrait}{Extraits}%
+        \crefname{algocf}{algorithme}{algorithmes}\Crefname{algocf}{Algorithme}{Algorithmes}}
+    \addto\extrasfrench{\nomsdesrenvois}
+\fi
 \AtBeginDocument{\nomsdesrenvois}
 
 % Les flottants restent près du texte qui les cite.

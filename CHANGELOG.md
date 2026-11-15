@@ -7,6 +7,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **English edition of the project report.** The report now exists in two editions built from
+  the same LaTeX sources: the French original and its English translation, chapter for
+  chapter. Releases carry both, as `battleship-report-fr.pdf` and `battleship-report-en.pdf`.
+
+### Changed
+
+- The sources of the report are laid out by language (`docs/report/fr/`, `docs/report/en/`)
+  around a shared preamble; the single `battleship-report.pdf` of earlier releases becomes
+  `battleship-report-fr.pdf`.
+
 ### Fixed
 
 - `make lint` finds the clang-tidy that Homebrew installs outside the `PATH`, names the tool

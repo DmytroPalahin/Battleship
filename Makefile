@@ -67,7 +67,7 @@ coverage: ## Test coverage of the engine (needs gcovr)
 	gcovr --root . --filter src/core --filter include build/coverage --print-summary \
 		--fail-under-line 95
 
-report: ## Build the LaTeX report (docs/report/build/battleship-report.pdf)
+report: ## Build the report, in French and in English (docs/report/build/)
 	cd docs/report && latexmk
 
 docs: ## Generate the API reference with Doxygen (docs/api/)

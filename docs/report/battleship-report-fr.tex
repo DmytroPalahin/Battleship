@@ -1,20 +1,24 @@
 % ===========================================================================
-%  Bataille Navale --- rapport de projet
+%  Bataille Navale --- rapport de projet, édition française (l'originale)
 %
 %  Compilation :  latexmk            (dans ce dossier)
-%  Résultat    :  build/battleship-report.pdf
+%  Résultat    :  build/battleship-report-fr.pdf
+%
+%  L'édition anglaise, battleship-report-en.tex, en est la traduction : les
+%  deux partagent preamble.tex, references.bib et data/.
 % ===========================================================================
 \documentclass[11pt, a4paper, french, oneside, parskip=half-, headings=small,
                numbers=noenddot, bibliography=totoc, listof=totoc]{scrreprt}
 
+\newif\ifanglais \anglaisfalse
 \input{preamble}
 
 \begin{document}
 
-\input{titlepage}
+\input{fr/titlepage}
 
 \pagenumbering{roman}
-\input{chapters/00-resume}
+\input{fr/00-resume}
 
 {\hypersetup{linkcolor=marine}
     \setcounter{tocdepth}{1}
@@ -23,19 +27,19 @@
 \cleardoublepage
 \pagenumbering{arabic}
 
-\input{chapters/01-introduction}
-\input{chapters/02-exigences}
-\input{chapters/03-architecture}
-\input{chapters/04-modele}
-\input{chapters/05-adversaire}
-\input{chapters/06-interface}
-\input{chapters/07-qualite}
-\input{chapters/08-bilan}
-\input{chapters/09-conclusion}
+\input{fr/01-introduction}
+\input{fr/02-exigences}
+\input{fr/03-architecture}
+\input{fr/04-modele}
+\input{fr/05-adversaire}
+\input{fr/06-interface}
+\input{fr/07-qualite}
+\input{fr/08-bilan}
+\input{fr/09-conclusion}
 
 \appendix
-\input{chapters/A-utilisation}
-\input{chapters/B-captures}
+\input{fr/A-utilisation}
+\input{fr/B-captures}
 
 \printbibliography[title={Références}]
 

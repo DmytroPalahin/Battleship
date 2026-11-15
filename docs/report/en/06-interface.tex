@@ -1,0 +1,278 @@
+\chapter{The graphical interface}
+\label{chap-interface}
+
+\section{A reminder about GTK}
+
+GTK~\cite{gtk3} is a library of graphical components, the \emph{widgets}, written in C.
+Three of its notions, seen in the course, shape this chapter.
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+    \item[Inheritance by inclusion] A button \emph{is} a container, which \emph{is} a
+          widget: each structure begins with the one it inherits from, and cast macros
+          (\code{GTK\_WINDOW()}, \code{GTK\_BOX()}\dots) make it possible to apply to an object
+          the functions of its ancestors.
+    \item[Containers] A window contains a single widget; boxes and grids are therefore
+          placed in it, and they organise the others.
+    \item[Event-driven programming] Once the event loop is started, the program no longer
+          decides the order of operations. It merely has \emph{attached}, beforehand, a callback
+          to each event it is interested in, with \code{g\_signal\_connect()}.
+\end{description}
+
+\section{The view}
+
+\subsection{The tree of components}
+
+The main window contains a stack (\code{GtkStack}) of two pages: the menu and the game.
+Changing screen comes down to changing the visible page, without destroying or recreating a
+window (\cref{fig-widgets}).
+
+\begin{figure}[ht]
+    \centering
+    \begin{forest}
+        for tree={
+                font=\sffamily\footnotesize, draw=marine, line width=0.5pt, rounded corners=2pt,
+                fill=white, inner sep=3.5pt, grow'=0, anchor=west, child anchor=west,
+                parent anchor=east, l sep=6mm, s sep=1.4mm, forked edge, fork sep=3mm,
+                edge={draw=marine, line width=0.5pt},
+            },
+        feuille/.style={fill=brume, draw=ardoise!70},
+            [GtkApplicationWindow, fill=marine, text=white
+                    [GtkStack
+                            [{\enquote{menu} page}, fill=ecume
+                                    [{info bar}, feuille]
+                                    [{title}, feuille]
+                                    [{three level buttons}, feuille]
+                            ]
+                            [{\enquote{game} page}, fill=ecume
+                                    [{info bar}, feuille]
+                                    [{boards}
+                                        [{player's fleet (GtkGrid)}, feuille]
+                                        [{illustration}, feuille]
+                                        [{enemy fleet (GtkGrid)}, feuille]
+                                    ]
+                                    [{footer}
+                                        [{current level}, feuille]
+                                        [{status line}, feuille]
+                                        [{command buttons}, feuille]
+                                    ]
+                            ]
+                    ]
+            ]
+    \end{forest}
+    \caption{Tree of the components of the main window. The intermediate nodes are boxes
+        (\code{GtkBox}). The info bar opens the rules and the presentation; each fleet brings
+        together a title, a grid of a hundred buttons framed by its coordinates, and a score.}
+    \label{fig-widgets}
+\end{figure}
+
+\subsection{A button must know who it is}
+
+A hundred buttons share the same callback; each must tell it \emph{which cell} it
+represents. The course solves this problem for the treasure game by associating with each
+button a small structure that groups a pointer to the parent and the identifier of the box.
+The project takes up this pattern as it stands (\cref{lst-contexte}).
+
+\begin{lstlisting}[caption={Context of a cell button (\fichier{src/ui/view.c}).},
+                   label={lst-contexte}]
+typedef struct cell_context {
+    bs_view *view;   /* the parent structure               */
+    bs_coord coord;  /* the identity of the button: its cell */
+} cell_context;
+
+static void on_cell_clicked(cell_context *context)
+{
+    const bs_view *view = context->view;
+    if (view->actions.cell_activated != NULL) {
+        view->actions.cell_activated(context->coord, view->user_data);
+    }
+}
+
+/* When the grid is built: */
+g_signal_connect_swapped(button, "clicked", G_CALLBACK(on_cell_clicked),
+                         &view->cell_contexts[index]);
+\end{lstlisting}
+
+The connection uses \code{g\_signal\_connect\_swapped()}: the callback receives its context
+first and can ignore the widget that emitted the signal. It does only one thing,
+\emph{translate}: the \enquote{clicked} signal of a button becomes the intention
+\enquote{the player aims at cell C4}, passed on to the controller (\cref{sec-pointeurs}).
+
+\subsection{Appearance is declared, not programmed}
+
+\begin{attention}
+    In version~1, each label received its own style provider, created by the C code: 27~calls
+    to \code{gtk\_css\_provider\_new()}, several of them never released. Each change of state of
+    a cell loaded a new image from disk, through a relative path that only worked from the
+    program's folder.
+\end{attention}
+
+In version~2, the C code gives the widgets nothing but \emph{class names}. Showing that a
+cell is hit means replacing its class \code{water} with \code{hit} (\cref{lst-set-cell}).
+What a class looks like is described once and for all in a style sheet (\cref{lst-css}),
+loaded by a single provider.
+
+\begin{lstlisting}[caption={Updating a cell: a mere change of class.},
+                   label={lst-set-cell}]
+if (previous != look) {
+    GtkStyleContext *context = gtk_widget_get_style_context(button);
+    gtk_style_context_remove_class(context, LOOK_CLASSES[previous]);
+    gtk_style_context_add_class(context, LOOK_CLASSES[look]);
+    view->looks[owner][index] = look;
+}
+gtk_widget_set_sensitive(button, sensitive);
+\end{lstlisting}
+
+\begin{lstlisting}[language=css, caption={Excerpt from \fichier{assets/style.css}.},
+                   label={lst-css}]
+button.cell.hit        { background-image: url("images/explosion.png"); }
+button.cell.own.sunk   { background-image: url("images/ship-sunk-player.png"); }
+button.cell.enemy.sunk { background-image: url("images/ship-sunk-enemy.png"); }
+button.cell.excluded   { background-image: url("images/flag.png"); }
+
+/* Keyboard play: the missile follows the focus on the enemy board. */
+button.cell.enemy.water:focus { background-image: url("images/rocket.png"); }
+\end{lstlisting}
+
+The last rule alone replaces four functions of version~1, which displayed and erased the
+image of the missile at each press of an arrow key.
+
+\subsection{Resources embedded in the executable}
+
+Images, sounds and style sheet are compiled by \code{glib-compile-resources} and linked into
+the executable. The program fits in a single file of about half a megabyte, starts from any
+folder (requirement~C6), and a missing resource becomes a \emph{build} error instead of an
+image absent at run time.
+
+\section{The controller}
+
+\subsection{Synchronise, always everything}
+
+The controller's \code{synchronise()} --- \code{ctrl\_tresor\_synchroniser()} in the
+course --- is its central function. It reads the whole model and pushes it to the view: two
+hundred cells, two scores, the level, a status line (\cref{lst-synchro}). It is called after
+\emph{every} change.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
+                   caption={The heart of the synchronisation (\fichier{src/ui/controller.c}).},
+                   label={lst-synchro}]
+for (int index = 0; index < BS_CELL_COUNT; index++) {
+    const bs_coord cell = bs_coord_from_index(index);
+    bs_view_set_cell(controller->view, BS_PLAYER_HUMAN, cell,
+                     own_look(own, cell, show_deductions), false);
+    /* A flagged cell is locked: firing at it would be a wasted shot. */
+    const bool playable = player_may_fire && bs_board_cell(enemy, cell) == BS_CELL_UNKNOWN;
+    bs_view_set_cell(controller->view, BS_PLAYER_COMPUTER, cell,
+                     enemy_look(enemy, cell, over), playable);
+}
+\end{lstlisting}
+
+Resynchronising everything may seem excessive when a shot modifies only a few cells. It is a
+deliberate choice. The view keeps no state of the game; it therefore cannot hold a
+\emph{stale} one. There is no partial update to forget --- whereas version~1 repeated, after
+each event, long sequences of button modifications that differed from level to level. Two
+hundred class comparisons per shot cannot be perceived.
+
+\subsection{The computer's turn: one shot per tick}
+
+\begin{attention}
+    In version~1, the whole turn of the computer --- sometimes a long series of hits --- took
+    place inside the function called by the player's click. The event loop being suspended
+    meanwhile, the window could not redraw itself: the player saw the final result of a turn,
+    without the intermediate shots.
+\end{attention}
+
+Since the model executes one step per call, the controller can hand control back to GTK
+between two shots. It arms a timer with \code{g\_timeout\_add()}; at each tick, the computer
+fires \emph{once}, the view is resynchronised, and the timer is armed again if it is still
+its turn to play (\cref{fig-sequence}). The player sees each shot land, and the interface
+never freezes (requirement~C7).
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+            acteur/.style={boite, minimum width=2.5cm, font=\sffamily\small\bfseries},
+            msg/.style={->, line width=0.6pt, draw=marine},
+            ret/.style={->, line width=0.6pt, draw=ardoise, dashed},
+            lbl/.style={font=\sffamily\scriptsize, above, inner sep=1.5pt},
+            lblb/.style={font=\sffamily\scriptsize, below, inner sep=1.5pt, text=ardoise}]
+        \node[acteur] (j) at (0,0) {Player};
+        \node[acteur, fill=ecume] (v) at (3.7,0) {View};
+        \node[acteur, fill=ecume] (c) at (7.4,0) {Controller};
+        \node[acteur, coeur] (m) at (11.1,0) {Model};
+        \foreach \n in {j,v,c,m} \draw[ardoise!60, line width=0.5pt] (\n.south) -- ++(0,-7.9);
+
+        \draw[msg] (0,-1.0) -- node[lbl] {click on C4} (3.7,-1.0);
+        \draw[msg] (3.7,-1.7) -- node[lbl] {\texttt{cell\_activated(C4)}} (7.4,-1.7);
+        \draw[msg] (7.4,-2.4) -- node[lbl] {\texttt{bs\_game\_human\_fire(C4)}} (11.1,-2.4);
+        \draw[ret] (11.1,-3.1) -- node[lblb] {miss, computer's turn} (7.4,-3.1);
+        \draw[msg] (7.4,-3.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-3.9);
+        \draw[msg] (7.4,-4.5) to[out=0, in=0, looseness=3.5] node[right, font=\sffamily\scriptsize]
+        {550 ms timer} (7.4,-5.1);
+
+        \draw[ardoise!50, dashed] (-1.3,-5.5) -- (12.4,-5.5);
+        \node[note, anchor=west, fill=white, inner sep=1.5pt] at (0.25,-5.5)
+        {later, from the event loop};
+
+        \draw[msg] (7.4,-6.5) -- node[lbl] {\texttt{bs\_game\_computer\_fire()}} (11.1,-6.5);
+        \draw[ret] (11.1,-7.2) -- node[lblb] {hit, the computer plays again} (7.4,-7.2);
+        \draw[msg] (7.4,-7.9) -- node[lbl] {\texttt{synchronise()}} (3.7,-7.9);
+    \end{tikzpicture}
+    \caption{Sequence of a shot by the player followed by a shot by the computer.}
+    \label{fig-sequence}
+\end{figure}
+
+\subsection{An end of game that does not block}
+
+At the end of a game, a message box offers to play again, change level or quit. It is shown
+without calling \code{gtk\_dialog\_run()}, which starts a nested event loop: the answer
+arrives through the \enquote{response} signal, like any other event, then through the
+intention \code{game\_over\_answered}.
+
+\begin{attention}
+    The \enquote{restart} button of version~1 called \code{gtk\_main()} from a callback: each
+    new game stacked one more event loop on top of the previous ones. Version~2 has only one,
+    that of \code{GtkApplication}.
+\end{attention}
+
+\section{Two optional capabilities}
+
+\subsection{Sound}
+
+The sound effects go through GStreamer, which not every machine has. The interface
+\fichier{audio.h} therefore has \emph{two} implementations, only one of which is linked into
+the program, depending on what the build found: \fichier{audio\_gst.c} plays the sounds,
+\fichier{audio\_null.c} does nothing. The controller calls \code{bs\_audio\_play()} without
+knowing which one it received. No conditional compilation appears in its code.
+
+\subsection{A second interface: the terminal}
+
+The program \code{battleship-cli play} offers the same game in a terminal
+(\cref{lst-terminal}). It links only the engine. Its \num{645} lines, simulator included,
+make up a second view and a second controller for an unchanged model: this is the practical
+demonstration of requirement~C1.
+
+\begin{lstlisting}[language={}, basicstyle=\ttfamily\footnotesize,
+                   caption={Excerpt from a game in a terminal
+                            (\code{battleship-cli play -{}-seed 7 -{}-level hard}): the computer
+                            hits at G4, the model excludes the diagonals, then it looks for
+                            the rest of the ship.},
+                   label={lst-terminal}]
+> You fire at E5: miss
+Enemy fires at G4: hit!
+Enemy fires at H4: miss
+
+   YOUR FLEET                 ENEMY WATERS
+    A B C D E F G H I J        A B C D E F G H I J
+  1 . . S . . . S . . S      1 . . . . . . . . . .
+  2 . . . . . . . . . .      2 . . . . . . . . . .
+  3 . . . . . - . - S .      3 . . . . . . . . . .
+  4 S . . . . . X o S .      4 . . . . . . . . . .
+  5 . . . . S - S - S .      5 . . . . o o . . . .
+  6 . . . . S o . . S .      6 . . . . o . . . . .
+  7 S S S o S . . . . .      7 . . . . . . . . . .
+  8 . . . . . . . . . .      8 . . . . . . . . . .
+  9 . . . . . . S . S .      9 . . . . . . . . . .
+ 10 . . . . . . S . S .     10 . . . . . . . . . .
+
+   S ship   X hit   # sunk   o miss   - cannot hold a ship
+\end{lstlisting}

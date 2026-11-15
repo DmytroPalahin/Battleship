@@ -30,15 +30,22 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Compile the report
-        # Options, output directory and file name come from docs/report/.latexmkrc.
+        # Two editions, French (the original) and English. Options and the output
+        # directory come from docs/report/.latexmkrc.
         uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
         with:
           working_directory: docs/report
-          root_file: main.tex
+          root_file: |
+            battleship-report-fr.tex
+            battleship-report-en.tex
+      - name: Check that both editions were built
+        run: ls -l docs/report/build/battleship-report-fr.pdf docs/report/build/battleship-report-en.pdf
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: battleship-report
-          path: docs/report/build/battleship-report.pdf
+          path: |
+            docs/report/build/battleship-report-fr.pdf
+            docs/report/build/battleship-report-en.pdf
           if-no-files-found: error
 
   api:

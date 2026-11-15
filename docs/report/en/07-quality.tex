@@ -1,0 +1,259 @@
+\chapter{Quality and continuous integration}
+\label{chap-qualite}
+
+The course lays down a rule of method: a function written is a function tested. Version~1
+could not apply it, since its rules did not run without a window. Version~2 turns it into an
+automatic pipeline, executed at every change to the code.
+
+\section{Test strategy}
+
+\begin{table}[ht]
+    \centering
+    \small
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Level}      & \textbf{What is verified, and how}                                       \\
+        \midrule
+        Unit                & 54 cases spread over five programs: every public function of the engine,
+        every error path.                                                                              \\
+        \addlinespace
+        Properties          & \num{2250} complete games played by the engine against itself; all the
+        invariants are recomputed \emph{after every shot}.                                             \\
+        \addlinespace
+        Strategies          & The three levels must stay ordered by measured strength, with a margin;
+        a hit ship must be pursued.                                                                    \\
+        \addlinespace
+        Reproducibility     & A simulation with a fixed seed is compared, byte for byte, with a
+        versioned reference file.                                                                      \\
+        \addlinespace
+        Terminal interface  & A scripted session is compared with the expected transcript.             \\
+        \addlinespace
+        Graphical interface & A whole game is played through the real GTK buttons, every warning from
+        GTK being fatal.                                                                               \\
+        \bottomrule
+    \end{tabularx}
+    \caption{The levels of testing.}
+    \label{tab-tests}
+\end{table}
+
+\subsection{A test harness of a hundred lines}
+
+The engine depends on nothing; it would have been a pity for its tests to impose a library.
+The harness \fichier{tests/bs\_test.h} fits in about a hundred lines: the macros \code{TEST},
+\code{CHECK}, \code{CHECK\_EQ} and \code{REQUIRE}, a table of cases and a main function that
+produces output in the TAP format (\cref{lst-test}).
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
+                   caption={A unit test: a refused shot modifies nothing (requirement~C4).},
+                   label={lst-test}]
+TEST(refused_shots_leave_the_game_untouched)
+{
+    bs_game game;
+    bs_coord deck;
+    REQUIRE(bs_game_init(&game, BS_DIFFICULTY_EASY, 2) == BS_OK);
+    REQUIRE(find_target(&game, true, &deck));
+    REQUIRE(bs_game_human_fire(&game, deck, NULL) == BS_OK);
+
+    CHECK_EQ(BS_ERR_ALREADY_SHOT, bs_game_human_fire(&game, deck, NULL));
+    CHECK_EQ(BS_ERR_OUT_OF_BOUNDS, bs_game_human_fire(&game, bs_coord_make(10, 0), NULL));
+    CHECK_EQ(1, bs_game_stats(&game, BS_PLAYER_HUMAN)->shots);
+    CHECK_EQ(BS_PHASE_HUMAN_TURN, bs_game_phase(&game));
+}
+\end{lstlisting}
+
+\subsection{Property tests}
+\label{sec-proprietes}
+
+A unit test checks an example chosen by its author. A property test checks a \emph{law} on
+thousands of examples that nobody chose. The program \fichier{test\_simulation} plays
+\num{2250} games --- 250 for each of the nine combinations of levels --- and, after every
+shot, recomputes everything the engine keeps up to date, to compare it with what it reports:
+
+\begin{itemize}
+    \item the number of decks and ships afloat, counted again cell by cell;
+    \item the consistency of the states: no water cell is reported hit, no ship is reported
+          in the water, a cell is \code{SUNK} exactly when its ship is sunk;
+    \item the score, which must be readable in full on the board;
+    \item the turn: it only changes hands on a miss;
+    \item the end: never two fleets sunk, a winner correctly designated.
+\end{itemize}
+
+Run under the \emph{sanitizers} (\cref{sec-sanitizers}), this test also serves as a
+\emph{fuzzing} campaign over the whole engine.
+
+\subsection{Testing the graphical interface for real}
+
+The \code{-{}-autoplay} option makes the computer play both sides. It could have sent the
+\enquote{player's} shots straight to the model; it would then have tested nothing of the
+interface. Instead, the controller asks the view to \emph{click on the button} of the chosen
+cell. Each shot thus follows the complete path of a user action:
+
+\begin{center}
+    GTK button $\;\rightarrow\;$ \enquote{clicked} signal $\;\rightarrow\;$ view
+    $\;\rightarrow\;$ controller $\;\rightarrow\;$ model $\;\rightarrow\;$ synchronisation.
+\end{center}
+
+At the end of the game, the test answers \enquote{quit} to the dialog box, here again as a
+click would. In the continuous integration pipeline, this test runs under a virtual display
+server (Xvfb), with the variable \code{G\_DEBUG=fatal-criticals}, which turns any anomaly
+reported by GTK into a failure. The sound effects are really decoded there, to a fake output,
+and a sound that cannot be played makes the test fail. Finally, the test saves a screenshot
+of the final window as an artefact of the build. The animation on the home page of the
+repository is produced in this way, not filmed by hand.
+
+\subsection{Reproducibility across platforms}
+
+The engine uses nothing but integer arithmetic. A simulation with a fixed seed must therefore
+give the same histogram with every compiler, on every system and every architecture. A test
+compares the output of the simulator with a versioned file
+(\fichier{tests/data/simulate\_seed2023.csv}). It fails if the random generator, the placement
+of the fleets or a strategy changes behaviour --- whether by mistake, or on purpose, in which
+case the reference file has to be regenerated and the change becomes visible in the history
+(requirement~C2).
+
+\section{Code analysis}
+
+\subsection{Warnings}
+
+Every warning is an error (requirement~C5), and the set of warnings is an extended one:
+\code{-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion
+    -Wstrict-prototypes}\dots{} Version~1 asked only for \code{-Wall}.
+
+\subsection{Dynamic analysis}
+\label{sec-sanitizers}
+
+The whole test suite is run a second time with AddressSanitizer~\cite{serebryany2012} and
+UndefinedBehaviorSanitizer, which instrument the program to detect invalid memory accesses
+and undefined behaviour at run time. The out-of-bounds read of version~1
+(\cref{chap-adversaire}) is exactly the kind of defect that this tool reveals at the first
+run.
+
+\subsection{Static analysis and coverage}
+
+Three analysers examine the code without executing it: \emph{clang-tidy}, \emph{cppcheck} and
+\emph{CodeQL}. The formatting is checked by \emph{clang-format}. Finally, the coverage of the
+tests is measured on the engine (\cref{tab-couverture}); the build fails if it drops below
+\SI{95}{\percent}.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{@{}l S[table-format=3.0] S[table-format=3.2] l@{}}
+        \toprule
+        \textbf{File}      & {\textbf{Lines}}  & {\textbf{Covered (\si{\percent})}}   &
+        \textbf{Lines not covered}                                                                                    \\
+        \midrule
+        \fichier{ai.c}     & 130               & 100.00                               &                               \\
+        \fichier{board.c}  & 186               & 97.85                                & placement dead end            \\
+        \fichier{common.c} & 14                & 100.00                               &                               \\
+        \fichier{game.c}   & 101               & 98.02                                & placement failure, propagated \\
+        \fichier{rng.c}    & 40                & 100.00                               &                               \\
+        \midrule
+        \textbf{Engine}    & {\bfseries 471}   & {\bfseries 98.73}                    &                               \\
+        \bottomrule
+    \end{tabular}
+    \caption{Line coverage of the engine by its tests. The six lines not covered all handle
+        the case, never observed, where a fleet cannot be placed.}
+    \label{tab-couverture}
+\end{table}
+
+\section{Continuous integration}
+\label{sec-ci}
+
+\subsection{A single description of the build}
+
+The project is built by CMake. Each useful configuration --- development, optimised build,
+\emph{sanitizers}, coverage, build without a graphical interface --- is a named \emph{preset}
+of the file \fichier{CMakePresets.json}~\cite{cmakepresets}. The continuous integration
+pipeline runs nothing other than
+
+\begin{center}
+    \code{cmake -{}-preset X} \quad\code{cmake -{}-build -{}-preset X}\quad
+    \code{ctest -{}-preset X}
+\end{center}
+
+and no compilation option is written in a file of the pipeline. A failure on the server is
+therefore reproduced on a workstation with the same command.
+
+\subsection{The pipeline}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=4mm and 7mm,
+            tache/.style={boite, font=\sffamily\footnotesize, minimum width=3.5cm,
+                    minimum height=8.5mm, inner sep=3pt},
+            titre/.style={font=\sffamily\small\bfseries, text=marine}]
+        \node[coeur, minimum width=2.0cm, minimum height=1.1cm] (push) {\texttt{git push}};
+
+        \node[tache, right=13mm of push, yshift=24mm] (fmt) {format\\[-1pt]\scriptsize clang-format};
+        \node[tache, below=of fmt] (build) {build ($\times 5$)\\[-1pt]\scriptsize GCC, Clang, Apple Clang};
+        \node[tache, below=of build] (head) {headless\\[-1pt]\scriptsize Debian, no GTK};
+        \node[tache, right=of fmt] (asan) {sanitizers\\[-1pt]\scriptsize ASan + UBSan};
+        \node[tache, below=of asan] (cov) {coverage\\[-1pt]\scriptsize \SI{95}{\percent} threshold};
+        \node[tache, below=of cov] (lint) {lint\\[-1pt]\scriptsize clang-tidy, cppcheck};
+        \node[tache, below=of head, fill=brume] (codeql) {CodeQL};
+        \node[tache, below=of lint, fill=brume] (report) {report\\[-1pt]\scriptsize \LaTeX{} $\rightarrow$ PDF};
+
+        \begin{scope}[on background layer]
+            \node[draw=ocean, dashed, rounded corners=4pt, inner sep=6pt, fill=ecume!50,
+                fit=(fmt)(lint)(build)(head)(asan)(cov)] (ci) {};
+        \end{scope}
+        \node[titre, above=0.5mm of ci.north] {Continuous integration (\fichier{ci.yml})};
+
+        \draw[fleche] (push.east) -- ++(5mm,0) |- (ci.west);
+        \draw[fleche] (push.east) -- ++(5mm,0) |- (codeql.west);
+
+        \node[coeur, below=26mm of push, minimum width=2.0cm, minimum height=1.1cm] (tag)
+        {tag\\[-1pt]\texttt{v*}};
+        \node[tache, minimum width=7.7cm, fill=sable, draw=corail] (rel)
+        at ($(codeql.south)!0.5!(report.south) + (0,-13mm)$)
+        {delivery (\fichier{release.yml}): tests, \texttt{.tar.gz} and \texttt{.deb} packages,\\[-1pt]
+            checksums, provenance attestation, PDF of the report};
+        \draw[fleche, draw=corail] (tag.east) -- ++(5mm,0) |- (rel.west);
+    \end{tikzpicture}
+    \caption{The continuous integration and delivery pipeline (GitHub Actions).}
+    \label{fig-ci}
+\end{figure}
+
+At every \emph{push} and every pull request, six jobs run in parallel (\cref{fig-ci}):
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+    \item[format] Checks the formatting of all the source files.
+    \item[build] Compiles and tests with GCC and Clang under Ubuntu, in \emph{Debug} and
+          \emph{Release} mode, and with Apple Clang under macOS; under Linux, also plays the
+          end-to-end game in the graphical interface and keeps the screenshot.
+    \item[headless] Compiles and tests the engine and the terminal interface in a Debian
+          container where GTK is not installed: this is the proof of requirement~C1. This
+          container also provides the oldest supported version of CMake.
+    \item[sanitizers] Replays all the tests, graphical interface included, under ASan and
+          UBSan.
+    \item[coverage] Measures the coverage of the engine and applies the threshold.
+    \item[lint] Runs clang-tidy and cppcheck.
+\end{description}
+
+Two other pipelines complete the set-up: the CodeQL security analysis, and the build of this
+report, whose PDF is published as an artefact.
+
+\subsection{Delivery}
+
+Pushing a version tag \code{v2.0.0} triggers the delivery. The pipeline recompiles in
+optimised mode, replays the tests, produces the packages (\code{.tar.gz}, \code{.deb}),
+computes their SHA-256 checksums, signs a \emph{provenance attestation} that links each
+published file to the \emph{commit} and the run that produced it, and publishes everything
+with the PDF of the report and the release notes extracted from the changelog.
+
+\subsection{Supply chain}
+
+The third-party actions used by the pipelines are pinned by the hash of their \emph{commit}
+and not by a version number, which a third party could move; a bot proposes their updates
+every month. Each job receives only the permissions it needs, read-only by default.
+
+\section{Conventions}
+
+\begin{itemize}
+    \item \emph{Commit} messages follow \emph{Conventional Commits} (\code{feat(ai): \dots},
+          \code{fix(ui): \dots}).
+    \item Versions follow semantic versioning~\cite{semver}; the file \fichier{CHANGELOG.md}
+          describes each version in the \emph{Keep a Changelog} format.
+    \item Architectural choices are recorded in short decision records
+          (\fichier{docs/adr/}): the context, the decision, its consequences.
+\end{itemize}

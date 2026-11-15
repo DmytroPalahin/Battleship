@@ -1,0 +1,190 @@
+\chapter{Architecture}
+\label{chap-architecture}
+
+\section{A single rule: dependencies point inwards}
+
+The architecture fits in one sentence: \textbf{the game engine does not know how it is
+    displayed; the interfaces know the engine; nothing knows the interfaces}
+(\cref{fig-couches}).
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=7mm and 9mm]
+        \node[coeur, minimum width=11.2cm, minimum height=1.5cm] (core)
+        {\textbf{battleship\_core} --- game engine (the \emph{model})\\[2pt]
+            \footnotesize C11, standard library only, no dynamic allocation};
+
+        \node[couche, above=14mm of core.north west, anchor=south west, minimum width=3.4cm,
+            minimum height=1.6cm] (gui)
+        {\textbf{battleship}\\[1pt]\footnotesize GTK~3 application\\\footnotesize view + controller};
+        \node[couche, above=14mm of core.north, anchor=south, minimum width=3.4cm,
+            minimum height=1.6cm] (cli)
+        {\textbf{battleship-cli}\\[1pt]\footnotesize terminal game\\\footnotesize simulator};
+        \node[couche, above=14mm of core.north east, anchor=south east, minimum width=3.4cm,
+            minimum height=1.6cm] (tests)
+        {\textbf{tests}\\[1pt]\footnotesize unit\\\footnotesize and property};
+
+        \node[externe, above=9mm of gui, minimum width=3.4cm] (gtk) {GTK~3, GLib\\[-1pt]
+            \footnotesize GStreamer (optional)};
+
+        \draw[fleche] (gui.south) -- (gui.south |- core.north);
+        \draw[fleche] (cli.south) -- (core.north);
+        \draw[fleche] (tests.south) -- (tests.south |- core.north);
+        \draw[fleche, draw=ardoise, dashed] (gui.north) -- (gtk.south);
+
+        \node[note, right=5mm of gtk, text width=6.4cm, align=left]
+        {An arrow reads \enquote{depends on}.\\None leaves the engine.};
+    \end{tikzpicture}
+    \caption{The layers of the program. Three executables are built on the same engine.}
+    \label{fig-couches}
+\end{figure}
+
+This rule is not a convention one promises to follow: it is \emph{enforced by the build}. The
+engine is a static library whose only include path is the \fichier{include/} folder. The
+continuous integration pipeline compiles and tests it in a container where GTK is not
+installed (\cref{sec-ci}): if someone added a call to GTK to the engine, that step would stop
+compiling.
+
+Three programs rest on the engine. Having more than one is not a luxury. As long as there is
+only one interface, nothing proves that the model is independent of it; the second interface
+is the demonstration.
+
+\section{From the course to the project: model, view, controller}
+
+The \emph{model / view / controller} division was born at the end of the 1970s in the
+Smalltalk environment~\cite{reenskaug1979, krasner1988}. It separates what a program
+\emph{knows}, what it \emph{shows} and the way it \emph{reacts}.
+
+The course describes how a graphical application works in three steps~\cite{toulouse2023}:
+the user acts on the view, the corresponding action takes place in the model, then the view
+is updated. It derives three libraries from this. \Cref{tab-mvc} shows how the project
+implements them.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+        \toprule
+                            & \textbf{Role (course)}                                                 & \textbf{Implementation (project)} \\
+        \midrule
+        \textbf{Model}      & User types and the functions that manipulate them: the game and its
+        rules.              &
+        \fichier{include/battleship/}, \fichier{src/core/} --- board, shots, deductions,
+        turns, opponent.                                                                                                                 \\
+        \addlinespace
+        \textbf{View}       & Graphical components to be arranged in windows.                        &
+        \fichier{src/ui/view.c} --- all the \emph{widgets}, no rule;
+        \fichier{assets/style.css} for the appearance.                                                                                   \\
+        \addlinespace
+        \textbf{Controller} & Conductor: associates actions with events, synchronises the view.      &
+        \fichier{src/ui/controller.c} --- asks the model to play, then resynchronises the
+        view.                                                                                                                            \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Correspondence between the organisation of the course and that of the project.}
+    \label{tab-mvc}
+\end{table}
+
+\subsection{Who owns what?}
+
+The course discusses four ways of grouping the model and the view in the structure of the
+controller, and keeps the one where the model is \emph{referenced} and the view \emph{owned}:
+the model has an existence of its own, before and after any graphical interface, whereas the
+view has no reason to exist without its controller. The project makes exactly this choice
+(\cref{lst-controleur})\footnote{The listings of version~2 are abridged, and some of their
+    comments are reworded for this report.}.
+
+\begin{lstlisting}[caption={The structure of the controller (\fichier{src/ui/controller.c}).},
+                   label={lst-controleur}]
+struct bs_controller {
+    GtkApplication *application;
+    bs_game *model; /* borrowed: owned by the application */
+    bs_view *view;  /* owned */
+    /* ... */
+};
+\end{lstlisting}
+
+The model, for its part, is declared by the application (\fichier{src/ui/app.c}), outside the
+controller. It could be saved, replayed or handed to another interface without the graphical
+interface knowing anything about it.
+
+\subsection{The \enquote{function pointer} variant}
+\label{sec-pointeurs}
+
+In the course's model solution, the controller calls \code{vue\_tresor\_get\_boite()} to
+fetch the buttons from the view and attaches the callbacks to them itself. A note adds that
+another, more elegant way exists, at the price of function pointers. It is this variant that
+the project implements.
+
+The view connects its signals itself and translates each gesture of the user into an
+\emph{intention}, expressed in the vocabulary of the game, which it passes on through a table
+of callbacks (\cref{lst-actions}).
+
+\begin{lstlisting}[caption={The intentions reported by the view (\fichier{src/ui/view.h}).},
+                   label={lst-actions}]
+typedef struct bs_view_actions {
+    void (*level_chosen)(bs_difficulty level, gpointer user_data);
+    void (*cell_activated)(bs_coord cell, gpointer user_data);
+    void (*reshuffle_requested)(gpointer user_data);
+    void (*restart_requested)(gpointer user_data);
+    void (*quit_requested)(gpointer user_data);
+    void (*game_over_answered)(bs_view_choice choice, gpointer user_data);
+    void (*closed)(gpointer user_data);
+} bs_view_actions;
+\end{lstlisting}
+
+The consequence is a strong one: \textbf{no \code{GtkWidget} crosses the interface of the
+    view}. The controller does not handle buttons; it says \emph{what} to show --- \enquote{this
+    cell is a hit} --- never \emph{how}. It could drive an entirely different graphical library
+without a single line changing.
+
+\section{The modules}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=6mm]
+        \node[boite] (types) {\textbf{types}\\[-1pt]\footnotesize coordinates,\\[-2pt]\footnotesize statuses};
+        \node[boite, right=of types] (rng) {\textbf{rng}\\[-1pt]\footnotesize reproducible\\[-2pt]\footnotesize randomness};
+        \node[boite, right=of rng] (board) {\textbf{board}\\[-1pt]\footnotesize fleet, shots,\\[-2pt]\footnotesize deductions};
+        \node[boite, right=of board] (ai) {\textbf{ai}\\[-1pt]\footnotesize choice\\[-2pt]\footnotesize of a target};
+        \node[boite, right=of ai] (game) {\textbf{game}\\[-1pt]\footnotesize turns,\\[-2pt]\footnotesize score, end};
+        \draw[fleche] (rng) -- (types);
+        \draw[fleche] (board) -- (rng);
+        \draw[fleche] (ai) -- (board);
+        \draw[fleche] (game) -- (ai);
+    \end{tikzpicture}
+    \caption{The modules of the engine form a chain: each one rests only on those before it.}
+    \label{fig-modules}
+\end{figure}
+
+Inside the engine, the five modules form a strict chain (\cref{fig-modules}). Each follows
+the pattern of the course: a header file that sets out the responsibilities --- data
+structure, instructions for use, preconditions --- and a source file that implements them.
+\Cref{tab-arborescence} gives the complete organisation of the repository.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xr@{}}
+        \toprule
+        \textbf{Folder}                                    & \textbf{Content}                                           & \textbf{Lines} \\
+        \midrule
+        \fichier{include/battleship/}, \fichier{src/core/} & Game engine: public interface and implementation           & \num{1343}     \\
+        \fichier{src/cli/}                                 & Terminal interface and simulator                           & \num{645}      \\
+        \fichier{src/ui/}                                  & GTK application: view, controller, shell, sound            & \num{1670}     \\
+        \fichier{assets/}                                  & Images, sounds, style sheet (embedded in the executable)   & \num{199}      \\
+        \fichier{tests/}                                   & Unit, property and terminal interface tests                & \num{1582}     \\
+        \fichier{docs/}                                    & Architecture guide, decisions, this report                 &                \\
+        \fichier{cmake/}, \fichier{packaging/}             & Build modules, desktop integration                         &                \\
+        \fichier{.github/}                                 & Continuous integration and delivery                        &                \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Organisation of the repository. The lines count the code and its comments; for
+        \fichier{assets/}, the style sheet alone.}
+    \label{tab-arborescence}
+\end{table}
+
+\begin{retenir}
+    The code of the tests (\num{1582} lines) is larger than that of the engine it verifies
+    (\num{1343} lines, headers included). This ratio is usual for a component whose behaviour
+    one wants to be able to guarantee.
+\end{retenir}

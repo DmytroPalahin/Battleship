@@ -1,0 +1,123 @@
+\chapter{The game and its requirements}
+\label{chap-exigences}
+
+\section{Rules}
+
+The player commands the fleet of the \emph{Sup Galilée Marine Nationale} against a fleet of
+pirates led by the computer. Each side has a grid of $10 \times 10$ cells and a fleet of ten
+ships, that is twenty occupied cells (\cref{tab-flotte}).
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{@{}lccc@{}}
+        \toprule
+        Type of ship   & Length (cells) & Number      & Occupied cells \\
+        \midrule
+        Four-decker    & 4              & 1           & 4              \\
+        Three-decker   & 3              & 2           & 6              \\
+        Two-decker     & 2              & 3           & 6              \\
+        One-decker     & 1              & 4           & 4              \\
+        \midrule
+        \textbf{Fleet} &                & \textbf{10} & \textbf{20}    \\
+        \bottomrule
+    \end{tabular}
+    \caption{Composition of a fleet.}
+    \label{tab-flotte}
+\end{table}
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+    \item[Placement] Ships are straight, horizontal or vertical. Two ships never touch,
+          \emph{neither by a side nor by a corner}: each ship is surrounded by a belt of water
+          (\cref{fig-non-contact}). The fleets are placed at random; the player can have their own
+          redrawn as long as no shot has been fired.
+    \item[Turn] The player starts. Firing means designating a cell of the opposing grid. If a
+          ship is there, it is \emph{hit} and the shooter plays again; otherwise the shot is a
+          \emph{miss} and the turn passes.
+    \item[Sunk ship] A ship all of whose cells are hit is \emph{sunk}.
+    \item[End of the game] The first side whose whole fleet is sunk has lost.
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[scale=0.62]
+        % --------------------------------------------------- (a) legal placement
+        \begin{scope}
+            \fill[ecume] (1,2) rectangle (6,5);
+            \plateau{7}
+            \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+            \fill[ocean, rounded corners=1.5pt] (6.12,0.12) rectangle (6.88,1.88);
+            \fill[ocean, rounded corners=1.5pt] (0.12,6.12) rectangle (1.88,6.88);
+            \node[note] at (3.5,-0.8) {(a) a ship's belt of water\\and legal neighbours};
+        \end{scope}
+        % ----------------------------------------------- (b) forbidden placements
+        \begin{scope}[xshift=9.5cm]
+            \plateau{7}
+            \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+            \fill[corail, rounded corners=1.5pt] (5.12,4.12) rectangle (5.88,5.88);
+            \fill[corail, rounded corners=1.5pt] (1.12,2.12) rectangle (3.88,2.88);
+            \draw[corail, line width=1.2pt] (4.75,3.75) -- (5.25,4.25) (4.75,4.25) -- (5.25,3.75);
+            \draw[corail, line width=1.2pt] (2.75,2.75) -- (3.25,3.25) (2.75,3.25) -- (3.25,2.75);
+            \node[note] at (3.5,-0.8) {(b) contact by a corner\\and contact by a side};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{The no-contact rule. In (a), the light area is forbidden to the other ships; in
+        (b), two placements that are refused.}
+    \label{fig-non-contact}
+\end{figure}
+
+The no-contact rule has a consequence that shapes the whole project: it makes it possible to
+\emph{deduce}. A hit proves that its four diagonal neighbours are water; a sunk ship proves
+that its whole belt is too. The game marks these cells with a flag, and the strength of the
+artificial opponent depends first of all on the use it makes of these deductions
+(\cref{chap-adversaire}).
+
+\section{Functional requirements}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}lX@{}}
+        \toprule
+        \textbf{F1} & Play a complete game against the computer, by the rules above.               \\
+        \textbf{F2} & Choose among three difficulty levels: easy, medium, hard.                    \\
+        \textbf{F3} & Place the fleets at random; redraw the player's before the first shot.       \\
+        \textbf{F4} & Display the state of both grids: the player's ships, misses, hits, sunk
+        ships, cells excluded by deduction.                                                        \\
+        \textbf{F5} & Display the score of each side and whose turn it is.                         \\
+        \textbf{F6} & Consult the rules and the presentation of the game at any time.              \\
+        \textbf{F7} & At the end of a game, offer to play again, change level or quit.             \\
+        \textbf{F8} & Play with the keyboard as well as the mouse; optional sound effects.         \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Functional requirements.}
+    \label{tab-fonctionnelles}
+\end{table}
+
+\section{Design requirements}
+
+These are what set version~2 apart from the first. Each of them can be verified, and
+\cref{chap-qualite} shows by what means it actually is.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}lXl@{}}
+        \toprule
+                    & \textbf{Requirement}                                                     & \textbf{Verified by} \\
+        \midrule
+        \textbf{C1} & The model depends neither on GTK nor on any other library.               &
+        build without GTK                                                                                             \\
+        \textbf{C2} & One seed replays exactly the same game, on every platform.               &
+        reference file                                                                                                \\
+        \textbf{C3} & The opponent cannot cheat: it does not know where the ships are.         &
+        construction (types)                                                                                          \\
+        \textbf{C4} & A refused operation leaves the state of the game untouched.              & unit tests           \\
+        \textbf{C5} & No compiler warning; no memory error.                                    &
+        \code{-Werror}, ASan, UBSan                                                                                   \\
+        \textbf{C6} & The program starts from any folder.                                      &
+        embedded resources                                                                                            \\
+        \textbf{C7} & The interface never freezes during the computer's turn.                  &
+        one shot per clock tick                                                                                       \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Design requirements and means of verification.}
+    \label{tab-conception}
+\end{table}

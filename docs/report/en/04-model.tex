@@ -1,0 +1,286 @@
+\chapter{The model: a self-contained game engine}
+\label{chap-modele}
+
+The model is a library of \num{1343} lines, written in C11~\cite{iso9899}, which knows the
+rules of Battleship and nothing else. This chapter presents its data structures, then its
+processing, in the order of the chain of modules of \cref{fig-modules}.
+
+\section{Representing a board}
+
+In version~1, a cell was described by a structure that mixed the state of the game with the
+display (\cref{lst-v1-cell}). Testing whether a ship was sunk meant having built buttons
+first.
+
+\begin{lstlisting}[caption={Version~1: the cell knows its button.}, label={lst-v1-cell}]
+typedef struct {
+    GtkWidget *button;  // Button to display the cell
+    gboolean is_ship;   // Flag indicating whether there is a ship in this box
+    gboolean is_hit;
+    gboolean is_shot;
+} Cell;
+\end{lstlisting}
+
+Version~2 separates two kinds of information that the first one confused: the
+\textbf{secret} --- where the ships are --- and what is \textbf{public} --- what the shots
+have revealed (\cref{lst-board}).
+
+\begin{lstlisting}[caption={One side's board (\fichier{include/battleship/board.h}).},
+                   label={lst-board}]
+typedef struct bs_ship {
+    bs_coord origin;            /* top-left deck                    */
+    bs_orientation orientation; /* direction of the remaining decks */
+    uint8_t length;             /* number of decks, from 1 to 4     */
+    uint8_t hits;               /* decks hit so far                 */
+} bs_ship;
+
+typedef struct bs_board {
+    bs_ship ships[BS_FLEET_SIZE];
+    uint8_t ship_count;            /* ships placed                      */
+    uint8_t ships_afloat;          /* ships not yet sunk                */
+    uint8_t decks_afloat;          /* decks not yet hit                 */
+    int8_t  ship_at[BS_CELL_COUNT]; /* secret: index of the ship, or -1 */
+    uint8_t state[BS_CELL_COUNT];   /* public: what the cell revealed   */
+} bs_board;
+\end{lstlisting}
+
+The public state of a cell takes one of the five values of \cref{tab-etats}. The fifth,
+\code{EXCLUDED}, did not exist as data in version~1: it only appeared in the form of a flag
+put on a button.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}lX@{}}
+        \toprule
+        \textbf{State}            & \textbf{Meaning for the attacker}                   \\
+        \midrule
+        \code{BS\_CELL\_UNKNOWN}  & Never fired at, nothing is known.                   \\
+        \code{BS\_CELL\_MISS}     & Fired at: water.                                    \\
+        \code{BS\_CELL\_HIT}      & Fired at: deck of a ship that is still afloat.      \\
+        \code{BS\_CELL\_SUNK}     & Fired at: deck of a sunk ship.                      \\
+        \code{BS\_CELL\_EXCLUDED} & Not fired at, but \emph{proved} empty by the
+        no-contact rule.                                                                \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Public states of a cell.}
+    \label{tab-etats}
+\end{table}
+
+\begin{retenir}[Invariants of the board]
+    All the functions of the module preserve three properties, which the property tests check
+    again after every shot of \num{2250} games (\cref{sec-proprietes}):
+    \begin{itemize}
+        \item ships do not overlap, do not touch and do not leave the board;
+        \item \code{decks\_afloat} equals the number of decks not yet hit;
+        \item a cell is \code{SUNK} if and only if it belongs to a ship all of whose decks are
+              hit.
+    \end{itemize}
+\end{retenir}
+
+\subsection{No dynamic allocation}
+
+The dimensions of the game are fixed: everything fits in arrays whose size is known at
+compile time. A whole game, \code{bs\_game}, takes 800~bytes. The engine never calls
+\code{malloc}. There is therefore no allocation failure to handle, no possible leak, and
+copying a game comes down to an assignment. This is what makes running millions of simulated
+games cheap.
+
+\section{Placing a fleet at random}
+
+\subsection{The algorithm of version~1: draw until it fits}
+
+The first version drew a position and an orientation at random, checked whether the ship
+fitted, and started again if not, up to a million attempts. The method works, but its
+duration is not bounded in any useful way, and its validity test contained an off-by-one
+error, hidden by the choice of the intervals drawn from.
+
+\subsection{The algorithm of version~2: enumerate, then choose}
+
+For each ship, from the longest to the shortest, the list of \emph{all} the legal positions
+is drawn up, then one of them is chosen uniformly (\cref{alg-placement}). A grid of 100 cells
+and two orientations give at most 200 candidates: the enumeration is immediate, and the
+algorithm no longer depends on luck to terminate.
+
+\begin{algorithm}[ht]
+    \caption{Random placement of a fleet}
+    \label{alg-placement}
+    \KwIn{a random generator $g$}
+    \KwOut{a board carrying the ten ships, none touching another}
+    \Repeat{the fleet is complete}{
+        empty the board\;
+        \ForEach{length $\ell$ of the fleet, in the order $4, 3, 3, 2, 2, 2, 1, 1, 1, 1$}{
+            $P \gets$ set of the pairs (origin, orientation) where a ship of length $\ell$ fits
+            without touching a ship already placed\;
+            \lIf{$P = \emptyset$}{give up this attempt \Com*[f]{dead end}}
+            choose $p \in P$ uniformly with $g$ and place the ship at $p$\;
+        }
+    }
+\end{algorithm}
+
+The test \enquote{fits without touching} is a simple inspection: the rectangle occupied by
+the ship, enlarged by one cell in every direction, is scanned, and the position is refused as
+soon as a cell of that rectangle already carries a ship. A ship with a single deck is
+identical in both orientations; it is counted only once, so as not to skew the draw.
+
+A dead end --- no room left for a remaining ship --- is theoretically possible. It has not
+occurred in any of the fleets drawn by the tests, that is several tens of thousands; the
+outer loop, bounded to a thousand attempts, only serves to turn a \enquote{cannot happen}
+into a reported error rather than an endless loop.
+
+\section{Firing, and drawing conclusions}
+\label{sec-deductions}
+
+A shot updates the public history and then the \emph{deductions} that the no-contact rule
+allows (\cref{fig-deductions}):
+
+\begin{itemize}
+    \item \textbf{hit} --- the four diagonal neighbours of the cell are water, because a
+          ship is straight and no other can brush against it;
+    \item \textbf{sunk} --- the whole belt of the ship is water.
+\end{itemize}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[scale=0.62]
+        % ------------------------------------------------------------- (a) after a hit
+        \begin{scope}
+            \plateau{7}
+            \fill[ocean!25] (2,3) rectangle (5,4);
+            \draw[ocean, dashed, line width=0.6pt, rounded corners=1.5pt] (2.1,3.1) rectangle (4.9,3.9);
+            \fill[corail] (3.5,3.5) circle (0.24);
+            \foreach \x/\y in {2/2, 4/2, 2/4, 4/4} {\drapeau{\x}{\y}}
+            \node[note] at (3.5,-0.8) {(a) hit:\\4 cells excluded};
+        \end{scope}
+        % --------------------------------------------------------- (b) after the sinking
+        \begin{scope}[xshift=9.5cm]
+            \plateau{7}
+            \fill[marine, rounded corners=1.5pt] (2.12,3.12) rectangle (4.88,3.88);
+            \foreach \x in {2,3,4} \fill[corail] (\x+0.5,3.5) circle (0.2);
+            \foreach \x in {1,...,5} { \drapeau{\x}{2} \drapeau{\x}{4} }
+            \drapeau{1}{3} \drapeau{5}{3}
+            \node[note] at (3.5,-0.8) {(b) sunk:\\12 cells excluded};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{Deductions drawn from a shot. The crosses mark the cells that the engine
+        classifies as \code{EXCLUDED}; in (a) the rest of the ship, dashed, is still unknown.}
+    \label{fig-deductions}
+\end{figure}
+
+These deductions are computed \emph{by the model}, at the moment of the shot, and not by each
+interface. In version~1, the marking of the flags was copied into each of the three click
+handlers, once for the player and once for the computer: on its own it made up nearly half
+of their length. It now fits in two functions of about ten lines.
+
+\section{What the attacker is entitled to know}
+\label{sec-connaissance}
+
+For the artificial opponent to be unable to cheat, asking it not to look is not enough. The
+model extracts from the board a separate structure, which contains only the public
+information (\cref{lst-knowledge}).
+
+\begin{lstlisting}[caption={The public knowledge of a board.}, label={lst-knowledge}]
+typedef struct bs_knowledge {
+    /* public state of each cell */
+    uint8_t state[BS_CELL_COUNT];
+    /* number of ships still afloat, by length */
+    uint8_t afloat_by_length[BS_MAX_SHIP_LENGTH + 1];
+} bs_knowledge;
+\end{lstlisting}
+
+The opponent receives this structure and nothing else. The position of the ships is not
+among its arguments: requirement~C3 is met by the types, with no particular discipline to
+observe.
+
+\section{The game is a state machine}
+
+The \code{game} module brings together two boards, the level of the opponent, the score and
+the turn. Its behaviour is that of the state machine of \cref{fig-automate}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=30mm,
+            etat/.style={boite, minimum width=3.0cm, minimum height=1.0cm, rounded corners=5mm}]
+        \node[etat, fill=ecume] (h) {Player's turn};
+        \node[etat, fill=ecume, right=of h] (c) {Computer's turn};
+        \node[etat, coeur, below=18mm of $(h)!0.5!(c)$] (o) {Game over};
+        \node[circle, fill=marine, inner sep=2.2pt, left=26mm of h] (start) {};
+
+        \draw[fleche] (start) -- node[above, note] {initialisation} (h);
+        \draw[fleche] (h) to[bend left=14] node[above, note] {miss} (c);
+        \draw[fleche] (c) to[bend left=14] node[below, note] {miss} (h);
+        \draw[fleche] (h) to[loop above, looseness=5] node[above, note] {hit} (h);
+        \draw[fleche] (c) to[loop above, looseness=5] node[above, note] {hit} (c);
+        \draw[fleche] (h) |- node[pos=0.25, left, note] {enemy fleet\\sunk} (o);
+        \draw[fleche] (c) |- node[pos=0.25, right, note] {player's fleet\\sunk} (o);
+    \end{tikzpicture}
+    \caption{The state machine of a game. A hit leaves the turn with the shooter.}
+    \label{fig-automate}
+\end{figure}
+
+The principle of the module's interface is that \textbf{one call performs one step, and only
+    one}, then reports what has changed (\cref{lst-game-api}). The engine never blocks, never
+waits and never calls anyone back. The pace is the caller's business: the graphical interface
+waits half a second between two shots of the computer, the simulator does not wait at all.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
+                   caption={The essentials of the interface of a game
+                            (\fichier{include/battleship/game.h}).}, label={lst-game-api}]
+bs_status bs_game_init(bs_game *game, bs_difficulty difficulty, uint64_t seed);
+bs_status bs_game_reshuffle(bs_game *game);
+bs_status bs_game_human_fire(bs_game *game, bs_coord target, bs_turn_report *report);
+bs_status bs_game_computer_fire(bs_game *game, bs_turn_report *report);
+bs_phase  bs_game_phase(const bs_game *game);
+\end{lstlisting}
+
+\subsection{Errors are values}
+
+Every operation that can be refused returns a \code{bs\_status}: success, invalid argument,
+position off the board, collision, cell already played, action forbidden in the current
+phase. A refused operation \emph{modifies nothing} (requirement~C4). Firing out of turn, for
+example, changes neither the board nor the score; a test checks this explicitly. The
+controller can thus pass any click on to the model without filtering it: the model is the
+sole judge.
+
+\section{Reproducible randomness}
+\label{sec-hasard}
+
+\subsection{Randomness is an argument}
+
+The engine never calls \code{rand()}. Every random decision draws from a generator,
+\code{bs\_rng}, which the caller owns and initialises with a seed. Two consequences:
+
+\begin{itemize}
+    \item one seed replays a whole game --- placement of both fleets and all the computer's
+          shots; this is the condition for a test of a random strategy to be deterministic;
+    \item the result does not depend on the platform's C library, whose \code{rand()} varies
+          from one system to another.
+\end{itemize}
+
+The generator is \emph{xoshiro256**}~\cite{blackman2021}, whose 256-bit state is filled from
+the seed by \emph{SplitMix64}~\cite{steele2014}. Its first outputs are recorded in the tests:
+any difference between two platforms would be detected.
+
+\subsection{Drawing an integer without bias}
+
+Version~1 obtained an integer in $[0, n)$ with \code{rand() \% n}. The operation is biased as
+soon as $n$ does not divide the number of possible values of the generator. With a 3-bit
+generator and $n = 3$, for example, the eight values $0, \dots, 7$ give the remainders
+$0, 1, 2, 0, 1, 2, 0, 1$: the remainder $2$ comes out twice in eight where the others come
+out three times.
+
+The module uses Lemire's method~\cite{lemire2019}, which multiplies instead of dividing and
+rejects the few draws responsible for the bias (\cref{lst-lemire}). A test checks the
+uniformity over \num{60000} rolls of a die.
+
+\begin{lstlisting}[caption={Uniform integer in $[0, \mathit{bound})$
+                            (\fichier{src/core/rng.c}).}, label={lst-lemire}]
+uint64_t product = (uint64_t)next_u32(rng) * bound;
+uint32_t low = (uint32_t)product;
+if (low < bound) {
+    const uint32_t threshold = (0U - bound) % bound;
+    while (low < threshold) {            /* biased draw: reject it */
+        product = (uint64_t)next_u32(rng) * bound;
+        low = (uint32_t)product;
+    }
+}
+return (uint32_t)(product >> 32);
+\end{lstlisting}

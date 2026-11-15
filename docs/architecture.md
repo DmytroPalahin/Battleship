@@ -1,7 +1,8 @@
 # Architecture
 
 This document explains how the program is organised and why. It is the map to read before
-changing anything; the [report](report/) tells the same story at length, in French.
+changing anything; the [report](report/) tells the same story at length, in French and in
+English.
 
 - [The one rule](#the-one-rule)
 - [Modules](#modules)

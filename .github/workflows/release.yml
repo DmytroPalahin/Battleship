@@ -63,11 +63,13 @@ jobs:
         uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
         with:
           working_directory: docs/report
-          root_file: main.tex
+          root_file: |
+            battleship-report-fr.tex
+            battleship-report-en.tex
 
       - name: Collect the files and their checksums
         run: |
-          cp docs/report/build/battleship-report.pdf dist/
+          cp docs/report/build/battleship-report-fr.pdf docs/report/build/battleship-report-en.pdf dist/
           (cd dist && sha256sum -- * > SHA256SUMS)
           ls -l dist
 

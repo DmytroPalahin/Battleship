@@ -1,0 +1,146 @@
+\chapter{Assessment}
+\label{chap-bilan}
+
+\section{The two versions in figures}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X r r@{}}
+        \toprule
+                                                 & \textbf{Version 1 (2023)} & \textbf{Version 2 (2026)} \\
+        \midrule
+        Source files (\fichier{.c})              & 1                         & 14                        \\
+        Lines of the longest file                & \num{2666}                & \num{617}                 \\
+        Functions                                & 36                        & 151                       \\
+        Average length of a function (lines)     & 67                        & 13                        \\
+        Longest function (lines)                 & 420                       & 77                        \\
+        Modifiable global variables              & 7                         & 0                         \\
+        Copies of the logic of a turn            & 3                         & 1                         \\
+        Style providers created by the code      & 27                        & 1                         \\
+        Event loops (\code{gtk\_main})           & 5 calls                   & 1                         \\
+        \addlinespace
+        Automatic test cases                     & 0                         & 54                        \\
+        Games played by the test suite           & 0                         & more than \num{6000}      \\
+        Coverage of the engine                   & ---                       & \SI{98.7}{\percent}       \\
+        Compilers checked continuously           & 0                         & 3                         \\
+        Warnings enabled                         & \code{-Wall}              & 14 options, as errors     \\
+        \addlinespace
+        Interfaces                               & 1                         & 2                         \\
+        Starts outside the program's folder      & no                        & yes                       \\
+        Game replayable from a seed              & no                        & yes                       \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Comparison of the two versions in figures.}
+    \label{tab-comparaison}
+\end{table}
+
+The total number of lines has gone up: \num{3658} lines of program against \num{2666}, to
+which \num{1582} lines of tests are added. The rewrite did not aim to write less, but to
+write each thing \emph{only once}, in a place where it can be verified. The most telling
+figure is probably the average length of a function, divided by five: 13~lines is a function
+that can be read at a glance.
+
+\section{Defects of version~1 removed}
+
+The complete review of the first version, prior to the rewrite, brought to light several
+defects that the game hid in use.
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+    \item[Out-of-bounds read (hard level)]
+          The neighbour of a hit, drawn at random, was read from the grid before its
+          coordinates were checked (\cref{lst-v1-bug}). When the hit was on an edge, the index
+          was $-1$ or $10$: undefined behaviour.
+    \item[Forgotten ships (hard level)]
+          If that neighbour was invalid, the pursuit was given up and the wounded ship
+          forgotten. The \enquote{hard} level was therefore less hard than intended.
+    \item[Nested event loops]
+          Every restart called \code{gtk\_main()} from a callback.
+    \item[Frozen window]
+          The computer's turn ran without handing control back to GTK.
+    \item[Hard-coded paths]
+          Images loaded relative to the current folder; sounds designated by an absolute path
+          specific to one machine.
+    \item[Leaks]
+          One style provider per label and one image per update, part of them never released.
+    \item[Biased randomness]
+          Draws by \code{rand() \% n} (\cref{sec-hasard}).
+\end{description}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,
+                   caption={Version~1: the cell is read before it is checked.},
+                   label={lst-v1-bug}]
+int random = rand() % 4;
+
+if ((data->player1_grid[coords4[random][0]][coords4[random][1]].is_shot == FALSE) &&
+    (coords4[random][0] != -1) &&
+    (coords4[random][0] != GRID_SIZE) &&
+    (coords4[random][1] != -1) &&
+    (coords4[random][1] != GRID_SIZE))
+{
+    around_hit.x = coords4[random][0];
+    around_hit.y = coords4[random][1];
+}
+else {
+    around_hit.hits = 0;   /* the pursuit is given up */
+}
+\end{lstlisting}
+
+None of these defects had been noticed while playing. All would have been found by the tools
+that version~2 now runs at every change: the first by AddressSanitizer, the second by the
+test that requires a hit ship to be pursued.
+
+\section{What was kept}
+
+The rewrite was not to change the game. The following were kept: the rules and the
+composition of the fleets; the three levels and their names; the rules and presentation
+screens, with their texts; the visual identity --- the navy of Sup Galilée against the
+pirates, the ships, the explosions and the missile, redrawn since; the victory and defeat
+messages.
+
+A few additions directly benefit the player: the coordinates around the grids, the live
+score, the unveiling of the enemy fleet at the end of the game, the possibility of playing
+again without restarting the program, and a computer whose every shot can be seen landing.
+
+\section{Limits}
+
+\begin{itemize}
+    \item \textbf{The hard opponent is not optimal.} Its density map counts the positions
+          of each ship independently of the others. An exact computation would enumerate the
+          complete fleets compatible with the observations; it would cost more, for a gain
+          that \cref{tab-candidats} suggests is small.
+    \item \textbf{There is no manual placement.} As in version~1, the player redraws their
+          fleet at random until satisfied.
+    \item \textbf{The original images and sounds had to be redone.} Those of 2023 had been
+          gathered without their sources being noted, which made it impossible to distribute
+          the game. Version~2.0 flagged them; since version~2.1, all the images are drawn and
+          all the sounds synthesised by a script of the repository
+          (\fichier{tools/generate-assets.sh}), under the same licence as the code. The
+          screenshots of appendix~\ref{chap-captures} show these new resources.
+    \item \textbf{Sound is only partly verified.} In continuous integration, the end-to-end
+          test really decodes the two sound effects, but to a fake output: no test machine
+          has a sound card. The playback itself still has to be checked by ear.
+    \item \textbf{GTK~3 is at the end of its life.} The project stays on the version taught
+          in the course; the view being isolated, a port to GTK~4 would touch only
+          \fichier{view.c}.
+\end{itemize}
+
+\section{Outlook}
+
+The architecture puts several extensions within reach without touching what exists.
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+    \item[Two-player game over a network]
+          This was the ambition of the library supplied with the original assignment,
+          organised around a client and a server. The current model, which executes one step
+          per call and never blocks, lends itself to it: a \enquote{remote player} is just
+          another source of shots, on the same footing as the artificial opponent.
+    \item[Manual placement]
+          The function \code{bs\_board\_place\_ship()} exists and already refuses illegal
+          positions; it remains to give it an interface.
+    \item[Translation]
+          All the texts are gathered in a single file, \fichier{texts.h}. Moving to
+          \emph{gettext} would be mechanical.
+    \item[Distribution]
+          A Flatpak package would make the game installable in one click on any Linux
+          distribution; the necessary metadata is already in the repository.
+\end{description}

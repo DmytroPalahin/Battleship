@@ -1,0 +1,73 @@
+\chapter{Introduction}
+\label{chap-introduction}
+
+\section{Context}
+
+The course \emph{Initiation aux interfaces graphiques} at Sup Galilée~\cite{toulouse2023}
+ends with a project: giving a Battleship game a graphical interface with the GTK library.
+The course is not just about learning windows and buttons. It argues for a way of organising
+code, \emph{modular programming}, which its material returns to from one session to the next
+and which can be summed up as follows:
+
+\begin{itemize}
+    \item for each concept, a header file that gives its definition and how to use it, and a
+          source file that implements the functions that manipulate it;
+    \item using a concept is independent of how it is implemented;
+    \item one program can be given several interfaces --- console, window --- and that is
+          then the only part that has to change;
+    \item every function written is tested straight away.
+\end{itemize}
+
+From this follows the division of an application into three libraries: the \emph{model},
+which represents the game and its rules; the \emph{view}, which gathers the graphical
+components; the \emph{controller}, \enquote{the conductor that links the two}.
+
+\section{The first version}
+
+In 2023 we carried out this project as a pair. Rather than dress up the library we were
+given, we had chosen to write the whole game, to get a better grasp of GTK. The result was a
+complete and pleasant game: three difficulty levels, random placement of the fleets, rules
+and presentation screens, a polished visual identity.
+
+But this game fitted in \emph{a single file} of \num{2666} lines, and its organisation
+contradicted what the course taught:
+
+\begin{itemize}
+    \item the state of the game was spread across seven global variables and the graphical
+          components themselves: the structure describing a cell held both
+          \enquote{is there a ship?} and the address of the button that displays it;
+    \item the three levels were three copies of one function several hundred lines long; a
+          fix made in one was missing from the others;
+    \item no rule could run without opening a window, so no automatic test was possible;
+    \item the program only worked when started from its own folder, and its sound variant
+          only on the machine where it had been written.
+\end{itemize}
+
+The program \emph{worked}. It could not be verified, nor modified without risk, nor reused.
+
+\section{Goals of the rewrite}
+
+Version~2 has a goal that is simple to state: \textbf{keep the game, redo everything else}.
+The player must find the same rules, the same screens, the same texts. Beneath the surface,
+the program must become what software maintained over time has to be:
+
+\begin{enumerate}
+    \item \textbf{modular} --- a model truly independent of the interface, to the point that
+          a second interface can drive it;
+    \item \textbf{verified} --- automatic tests for the rules, the computer's strategies and
+          the interface itself;
+    \item \textbf{reproducible} --- a game entirely determined by a seed, an identical build
+          on a workstation and on a server;
+    \item \textbf{deliverable} --- a single executable, packages, continuous integration and
+          delivery.
+\end{enumerate}
+
+\section{Structure of the report}
+
+\Cref{chap-exigences} sets out the rules of the game and the requirements.
+\Cref{chap-architecture} presents the architecture and justifies it.
+\Cref{chap-modele,chap-adversaire} detail the game engine and then the artificial opponent,
+with the measurements of its strength. \Cref{chap-interface} describes the graphical
+interface. \Cref{chap-qualite} sets out the verification approach and the continuous
+integration pipeline. \Cref{chap-bilan} draws up the assessment in figures of the rewrite,
+its limits and its possible extensions.

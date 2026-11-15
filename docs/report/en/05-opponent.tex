@@ -1,0 +1,297 @@
+\chapter{The opponent: three measured strategies}
+\label{chap-adversaire}
+
+\section{A pure function}
+
+The artificial opponent comes down to one function (\cref{lst-ia}): given a level, the public
+knowledge of the board fired at and a random generator, it designates the next cell to aim
+at.
+
+\begin{lstlisting}[caption={The whole opponent (\fichier{include/battleship/ai.h}).},
+                   label={lst-ia}]
+bs_status bs_ai_choose_target(bs_difficulty difficulty,
+                              const bs_knowledge *knowledge,
+                              bs_rng *rng, bs_coord *target);
+\end{lstlisting}
+
+This function \textbf{keeps no memory} from one call to the next. \enquote{A ship is
+    wounded} is not a piece of information to remember: it can be read on the board, where a
+\code{HIT} cell designates a deck that is hit on a ship still afloat.
+
+\begin{attention}
+    In version~1, the pursuit of a hit ship relied on a global variable. After a hit, the
+    computer drew one of the four neighbours at random; if it was off the board or already
+    played, it \emph{gave up the pursuit} and went back to random fire, forgetting the wounded
+    ship. Worse, the cell drawn was read from the array \emph{before} checking that it was on
+    the board: an out-of-bounds read, undefined behaviour in C.
+\end{attention}
+
+A function without memory cannot fall out of step with the game. It also lends itself to
+every experiment: any position can be submitted to it, it can be made to play against
+itself, or used to advise the player.
+
+\section{Three levels, one more skill at each step}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}Xccc@{}}
+        \toprule
+        \textbf{Level}                       & \textbf{Strategy}                                                      &
+        \rotatebox{60}{\small never repeats} & \rotatebox{60}{\small deduces}                                         &
+        \rotatebox{60}{\small finishes, anticipates}                                                                              \\
+        \midrule
+        Easy                                 & Fires at random among the cells not yet fired at.                      &
+        $\bullet$                            &                                                                        &           \\
+        Medium                               & Fires at random, but never at a cell that the rules prove empty.       &
+        $\bullet$                            & $\bullet$                                                              &           \\
+        Hard                                 & Finishes off wounded ships; when hunting, aims at the likeliest cell.  &
+        $\bullet$                            & $\bullet$                                                              & $\bullet$ \\
+        \bottomrule
+    \end{tabularx}
+    \caption{The three levels of the opponent.}
+    \label{tab-niveaux}
+\end{table}
+
+The easy level ignores the deductions of \cref{sec-deductions}: it can fire at a cell marked
+with a flag. The medium level uses them, and that is its only difference. The hard level
+adds reasoning about the ships that remain.
+
+\section{The hard level: a density map}
+
+\subsection{Principle}
+
+The hard level asks itself a simple question: \emph{among all the ways of placing the ships
+    still afloat that are compatible with what I know, how many go through this cell?} The cell
+that the most placements go through is the likeliest.
+
+Let $K$ be the current knowledge, $n_\ell$ the number of ships of length $\ell$ still afloat
+and $P_\ell(K)$ the set of consistent positions for such a ship. The score of a cell $c$
+that is still unknown is
+\begin{equation}
+    s(c) \;=\; \sum_{\ell = 1}^{4} n_\ell \cdot
+    \bigl|\{\, p \in P_\ell(K) \;:\; c \in p \,\}\bigr| .
+    \label{eq-densite}
+\end{equation}
+
+A position $p$ is \emph{consistent} with $K$ when the following three conditions hold:
+
+\begin{enumerate}
+    \item each of its cells is either unknown or a hit deck of a ship afloat;
+    \item it is not made \emph{only} of hit decks --- that ship would already be sunk;
+    \item no hit deck adjoins it without belonging to it --- two ships do not touch.
+\end{enumerate}
+
+\Cref{fig-densite} shows the map obtained on a blank board. A corner is covered by only 16
+placements, the centre by 36: without any rule telling it so, the computer opens the game in
+the centre, where the large ships have the most ways of being.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[scale=0.58]
+        % Real scores computed by bs_ai_density() on a blank board (symmetric).
+        \foreach \v [count=\i from 0] in {
+                16,22,25,26,26,26,26,25,22,16,
+                22,28,31,32,32,32,32,31,28,22,
+                25,31,34,35,35,35,35,34,31,25,
+                26,32,35,36,36,36,36,35,32,26,
+                26,32,35,36,36,36,36,35,32,26,
+                26,32,35,36,36,36,36,35,32,26,
+                26,32,35,36,36,36,36,35,32,26,
+                25,31,34,35,35,35,35,34,31,25,
+                22,28,31,32,32,32,32,31,28,22,
+                16,22,25,26,26,26,26,25,22,16} {
+                \pgfmathtruncatemacro{\col}{mod(\i,10)}
+                \pgfmathtruncatemacro{\row}{9 - int(\i/10)}
+                \pgfmathtruncatemacro{\teinte}{(\v - 16) * 5}
+                \fill[ocean!\teinte!ecume] (\col,\row) rectangle ++(1,1);
+                \ifnum\v>29
+                    \node[font=\sffamily\scriptsize, text=white] at (\col+0.5,\row+0.5) {\v};
+                \else
+                    \node[font=\sffamily\scriptsize, text=marine] at (\col+0.5,\row+0.5) {\v};
+                \fi
+            }
+        \plateau{10}
+        \foreach \l [count=\i from 0] in {A,B,C,D,E,F,G,H,I,J}
+        \node[font=\sffamily\scriptsize, text=ardoise] at (\i+0.5,10.45) {\l};
+        \foreach \n in {1,...,10}
+        \node[font=\sffamily\scriptsize, text=ardoise] at (-0.45,10.5-\n) {\n};
+    \end{tikzpicture}
+    \caption{Density map of a blank board: number of placements of the fleet covering each
+        cell (values produced by \code{bs\_ai\_density()}).}
+    \label{fig-densite}
+\end{figure}
+
+\subsection{Hunting and finishing off with the same code}
+
+As long as no ship is wounded, all the consistent placements count: this is the \emph{hunt}.
+As soon as a \code{HIT} cell exists, only the placements that \emph{explain} at least one hit
+deck are kept, weighted by the number of decks explained. The same formula then becomes a
+procedure for \emph{finishing off}:
+
+\begin{itemize}
+    \item around an isolated hit deck, the four neighbours receive a score, all the higher
+          as long ships can extend in their direction;
+    \item as soon as two aligned decks are hit, condition~3 eliminates every perpendicular
+          position: only the two cells extending the line keep a score.
+\end{itemize}
+
+No special case is programmed for this; the behaviour follows from the three consistency
+conditions (\cref{alg-densite}).
+
+\begin{algorithm}[ht]
+    \caption{Choice of a target at the hard level}
+    \label{alg-densite}
+    \KwIn{the knowledge $K$, a random generator $g$}
+    \KwOut{a cell to aim at}
+    $s(c) \gets 0$ for every cell $c$\;
+    $\mathit{finish} \gets$ there is a \textsc{hit} cell in $K$\;
+    \ForEach{length $\ell$ such that $n_\ell > 0$}{
+        \ForEach{position $p$ of a ship of length $\ell$ on the board}{
+            \lIf{$p$ is not consistent with $K$}{skip to the next one}
+            $h \gets$ number of \textsc{hit} cells of $p$\;
+            \lIf{$\mathit{finish}$ and $h = 0$}{skip to the next one}
+            $w \gets n_\ell \times h$ if $\mathit{finish}$, $n_\ell$ otherwise\;
+            \lForEach{unknown cell $c$ of $p$}{$s(c) \gets s(c) + w$}
+        }
+    }
+    \Return a cell of maximal score, drawn at random with $g$ in case of a tie\;
+\end{algorithm}
+
+The cost is negligible: four lengths, two orientations, a hundred origins, ships of four
+cells at most --- a few thousand operations per shot. Drawing at random among cells of equal
+score keeps the computer from always playing the same opening.
+
+\section{Measuring rather than assuming}
+
+\subsection{Protocol}
+
+The program \code{battleship-cli simulate} makes the strategies play without an interface.
+Two experiments are run, entirely determined by a seed:
+
+\begin{description}[style=nextline, leftmargin=1.2em]
+    \item[Solo] One strategy fires at a random fleet until it sinks it. The shots are
+          counted: at least 20 are needed, at most 100. This measurement isolates the quality of
+          the strategy.
+    \item[Duel] Two strategies face each other with the real rule \enquote{a hit plays
+              again}. Each pairing is played with the starting side alternating, to cancel out the
+          advantage of the first shot.
+\end{description}
+
+All the figures of this chapter come from the command
+\code{battleship-cli simulate -{}-games 10000 -{}-seed 1} and can be reproduced exactly.
+
+\subsection{Results}
+
+The levels are clearly ordered (\cref{tab-solo,fig-histogramme}): it takes on average
+\num{96.2} shots at the easy level, \num{65.8} at the medium level and \num{55.3} at the hard
+level. In a duel (\cref{tab-duels}), the hard level beats the medium one in
+\SI{87.5}{\percent} of the games, and the medium level wins \num{9999} of its \num{10000}
+games against the easy one. The diagonal, close to \SI{50}{\percent}, confirms that
+alternating the sides does neutralise the advantage of the first shot.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{@{}l S[table-format=2.2] S[table-format=1.2] S[table-format=2.0]
+            S[table-format=2.0] S[table-format=3.0] S[table-format=3.0]@{}}
+        \toprule
+        \textbf{Level}     & {\textbf{Mean}}                         & {\textbf{Std dev.}} & {\textbf{Min.}} &
+        {\textbf{Median}}  & {\textbf{9\textsuperscript{th} decile}} & {\textbf{Max.}}                                        \\
+        \midrule
+        Easy               & 96.19                                   & 4.10                & 69              & 97 & 100 & 100 \\
+        Medium             & 65.83                                   & 6.07                & 44              & 66 & 74  & 85  \\
+        Hard               & 55.27                                   & 6.80                & 28              & 56 & 64  & 79  \\
+        \bottomrule
+    \end{tabular}
+    \caption{Number of shots needed to sink a random fleet (\num{10000} games per level).}
+    \label{tab-solo}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=0.96\textwidth, height=6.4cm,
+                xlabel={Number of shots to sink the fleet},
+                ylabel={Games (out of \num{10000})},
+                xmin=25, xmax=101, ymin=0,
+                xtick={30,40,...,100}, ytick distance=500,
+                scaled y ticks=false,
+                yticklabel={\pgfmathprintnumber[fixed, 1000 sep={,}]{\tick}},
+                axis lines=left, axis line style={draw=ardoise},
+                tick style={draw=ardoise}, tick label style={font=\sffamily\footnotesize},
+                label style={font=\sffamily\small},
+                ymajorgrids, grid style={draw=ardoise!20},
+                legend style={draw=none, fill=none, font=\sffamily\small, at={(0.03,0.97)},
+                        anchor=north west, legend cell align=left},
+                const plot mark mid, area style, enlarge x limits=false,
+            ]
+            \addplot[draw=vert, fill=vert, fill opacity=0.30, line width=0.7pt]
+            table[x=shots, y=hard] {data/benchmark.dat} \closedcycle;
+            \addlegendentry{Hard}
+            \addplot[draw=ocean, fill=ocean, fill opacity=0.30, line width=0.7pt]
+            table[x=shots, y=medium] {data/benchmark.dat} \closedcycle;
+            \addlegendentry{Medium}
+            \addplot[draw=corail, fill=corail, fill opacity=0.30, line width=0.7pt]
+            table[x=shots, y=easy] {data/benchmark.dat} \closedcycle;
+            \addlegendentry{Easy}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Distribution of the number of shots by level. The easy level runs into the
+        ceiling of 100 shots; the other two form well-separated bell curves.}
+    \label{fig-histogramme}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{@{}l S[table-format=3.1] S[table-format=3.1] S[table-format=2.1]@{}}
+        \toprule
+                        & {\textbf{against Easy}} & {\textbf{against Medium}} & {\textbf{against Hard}} \\
+        \midrule
+        \textbf{Easy}   & 49.6                    & 0.0                       & 0.0                     \\
+        \textbf{Medium} & 100.0                   & 49.7                      & 12.0                    \\
+        \textbf{Hard}   & 100.0                   & 87.5                      & 50.0                    \\
+        \bottomrule
+    \end{tabular}
+    \caption{Duels: percentage of games won by the level of the row (\num{10000} games per
+        cell).}
+    \label{tab-duels}
+\end{table}
+
+\subsection{How the levels were chosen}
+
+The three levels do not come from an intuition but from a comparison. Four candidate
+strategies were measured during development (\cref{tab-candidats}).
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X S[table-format=2.1]
+            S[table-format=+2.1] l@{}}
+        \toprule
+        \textbf{Strategy}                               & {\textbf{Shots}} & {\textbf{Gain}} & \textbf{Kept as} \\
+        \midrule
+        A. Pure chance                                  & 96.2             &                 & Easy             \\
+        B. A + respect for the deductions               & 65.8             & -30.4           & Medium           \\
+        C. B + classic pursuit of hit ships             & 58.2             & -7.6            & ---              \\
+        D. B + density map (hunting and finishing off)  & 55.3             & -2.9            & Hard             \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Candidate strategies. The gain is expressed relative to the previous row;
+        strategy~C was measured over \num{2000} games.}
+    \label{tab-candidats}
+\end{table}
+
+The lesson of this table is counter-intuitive. With the no-contact rule, the skill that
+matters most is neither the pursuit of hit ships nor the computation of probabilities: it is
+the simple fact of \textbf{not firing where the rules prove there is nothing}. On its own,
+this discipline saves thirty shots. The classic pursuit adds fewer than eight, and the
+density map three more.
+
+The levels were therefore spaced according to these measurements: strategy~C, too close
+to~D, would not have made a noticeable intermediate level.
+
+\begin{retenir}[A floor that is hard to lower]
+    Why does the best level still need 55 shots for 20 cells to hit? Because of the four ships
+    of a single cell. No reasoning can \emph{locate} them: once the large ships are sunk,
+    nearly all the remaining cells have to be explored. The density map gets close to this
+    floor; it cannot remove it.
+\end{retenir}

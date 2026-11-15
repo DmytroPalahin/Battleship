@@ -1,0 +1,29 @@
+\chapter{Conclusion}
+\label{chap-conclusion}
+
+The first version of this project answered the question asked in 2023: do we know how to
+build a graphical interface with GTK? It answered it well --- the game was complete --- but
+it left aside the other half of the course, the one that talks about organisation: one
+concept per module, use independent of implementation, a function written and therefore
+tested.
+
+The second version answers that other half. What it demonstrates comes down to three points.
+
+\textbf{Separating costs little and pays a lot.} Extracting the rules into a library with no
+dependency made possible, in one stroke, the automatic tests, the second interface, the
+measurement of the strategies and reproducibility. None of these four things was conceivable
+as long as a cell of the game contained the address of a button.
+
+\textbf{Measuring corrects intuition.} We thought, in 2023, that the strength of the computer
+lay in the way it pursued a hit ship. The measurements show that the essential lies
+elsewhere: respecting what the no-contact rule proves saves thirty shots, the pursuit fewer
+than eight. The difficulty levels were redefined according to these figures.
+
+\textbf{Tools find what use hides.} The out-of-bounds read of the hard level never crashed
+the game in front of us. It was there all the same, and a standard tool would have reported
+it at the very first run. Verifying automatically, at every change, is not an extra comfort:
+it is what makes it possible to modify a program without fear of breaking it.
+
+The game itself has not changed. One still commands the navy of Sup Galilée against the
+pirates, on a grid of ten cells by ten. That was the goal: for the player to see no
+difference, and for the next developer to see nothing else.

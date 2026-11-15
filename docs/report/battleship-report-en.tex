@@ -1,0 +1,47 @@
+% ===========================================================================
+%  Battleship --- project report, English edition
+%
+%  Build  :  latexmk            (in this folder)
+%  Result :  build/battleship-report-en.pdf
+%
+%  This edition is the translation of battleship-report-fr.tex, the original:
+%  chapter for chapter, with the same labels. Both share preamble.tex,
+%  references.bib and data/.
+% ===========================================================================
+\documentclass[11pt, a4paper, british, oneside, parskip=half-, headings=small,
+               numbers=noenddot, bibliography=totoc, listof=totoc]{scrreprt}
+
+\newif\ifanglais \anglaistrue
+\input{preamble}
+
+\begin{document}
+
+\input{en/titlepage}
+
+\pagenumbering{roman}
+\input{en/00-abstract}
+
+{\hypersetup{linkcolor=marine}
+    \setcounter{tocdepth}{1}
+    \tableofcontents}
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+\input{en/01-introduction}
+\input{en/02-requirements}
+\input{en/03-architecture}
+\input{en/04-model}
+\input{en/05-opponent}
+\input{en/06-interface}
+\input{en/07-quality}
+\input{en/08-assessment}
+\input{en/09-conclusion}
+
+\appendix
+\input{en/A-usage}
+\input{en/B-screenshots}
+
+\printbibliography[title={References}]
+
+\end{document}

@@ -1,0 +1,40 @@
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This report describes the design and implementation of a \emph{Battleship} game against the
+computer, written in C11 with the GTK~3 graphical toolkit.
+
+The project began in 2023 as a pair assignment for the course \emph{Initiation aux interfaces
+    graphiques} (introduction to graphical interfaces). The first version fitted in a single file
+of \num{2666} lines: the game worked, but the rules, the display and the reactions to clicks
+were intertwined in it, and each of the three difficulty levels was a copy of the same code.
+
+The second version, the subject of this document, keeps the game and rebuilds its foundations.
+It applies to the end the \emph{model / view / controller} organisation taught in the course:
+
+\begin{itemize}
+    \item a self-contained \textbf{game engine}, a C11 library with no dependency at all, no
+          dynamic allocation and no global state;
+    \item \textbf{two interfaces} for that same engine, one graphical (GTK~3), the other in a
+          terminal --- proof that the model really knows nothing of its view;
+    \item \textbf{three opponents} whose strength is \emph{measured} over thousands of
+          reproducible games: it takes on average \num{96.2}, \num{65.8} and \num{55.3} shots
+          at the easy, medium and hard levels to sink a fleet;
+    \item a complete \textbf{quality pipeline}: 54 unit test cases, property tests replaying
+          \num{2250} games, an end-to-end test of the interface, static and dynamic analysis
+          of the code, continuous integration and delivery.
+\end{itemize}
+
+The report describes the architecture chosen, the data structures and the algorithms ---
+random placement of a fleet, deductions drawn from the no-contact rule, probability map of the
+hard level --- and then the verification approach. It ends with an assessment in figures that
+compares the two versions.
+
+\vspace{1.2em}
+\noindent\textbf{Keywords:} C language, GTK, model-view-controller, modular programming, game
+artificial intelligence, testing, continuous integration.
+
+\vspace{1.2em}
+\noindent\emph{This is the English edition of the report. The French edition is the original,
+    and this text is its translation; the game itself speaks French, so the names of its screens
+    and buttons are quoted as they appear.}

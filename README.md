@@ -201,7 +201,7 @@ The full tour, with the state machine and a sequence diagram of a shot, is in
 ├── docs/
 │   ├── architecture.md   how it fits together
 │   ├── adr/              architecture decision records
-│   ├── report/           the project report (LaTeX, French)
+│   ├── report/           the project report (LaTeX, in French and in English)
 │   └── screenshots/
 ├── tools/                asset generator
 ├── cmake/                build modules
@@ -252,8 +252,9 @@ GStreamer sink (`pulsesink`, `alsasink`…) to send it elsewhere.
 - 📐 [**Architecture**](docs/architecture.md) — modules, state machine, sequence of a shot
 - 🧭 [**Decision records**](docs/adr) — why it is built this way
 - 📚 **API reference** — `make docs` generates it from the public headers with Doxygen
-- 📄 [**Project report**](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report.pdf)
-  — the full write-up, in French ([LaTeX sources](docs/report))
+- 📄 [**Project report**](docs/report) — the full write-up, in two editions built from the
+  same LaTeX sources: [English](docs/report/en) and [French](docs/report/fr), the original.
+  The PDFs are attached to [each release](https://github.com/DmytroPalahin/battleship/releases/latest).
 - 📝 [**Changelog**](CHANGELOG.md)
 
 ## History
