@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-11-15
+
+### Added
+
+- A built copy of each edition of the report is kept next to its sources, in `docs/report/`,
+  to be read on GitHub without building anything.
+
 ### Fixed
 
 - `make coverage` and `make docs` name the tool that is missing (gcovr, Doxygen) before doing
@@ -168,7 +175,8 @@ The original university project, by Dmytro Palahin and Ivanna Makam
 - Rules and trailer windows.
 - A variant with sound effects through GStreamer.
 
-[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/DmytroPalahin/battleship/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/DmytroPalahin/battleship/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/DmytroPalahin/battleship/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/DmytroPalahin/battleship/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/DmytroPalahin/battleship/compare/v2.0.0...v2.1.0

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 project(
   battleship
-  VERSION 2.2.0
+  VERSION 2.2.1
   DESCRIPTION "Battleship (Bataille Navale) in C11 and GTK 3"
   HOMEPAGE_URL "https://github.com/DmytroPalahin/battleship"
   LANGUAGES C)
