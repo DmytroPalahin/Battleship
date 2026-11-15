@@ -10,7 +10,9 @@ The report of the project, written with LaTeX, in two editions:
 The English edition is the translation of the French one, chapter for chapter and with the
 same labels, so that a change to one is easy to carry over to the other.
 
-The PDFs of the latest release:
+To read the report without building it, open the copy kept in this folder,
+[English](battleship-report-en.pdf) or [French](battleship-report-fr.pdf), or download the one
+attached to the latest release:
 [English](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report-en.pdf),
 [French](https://github.com/DmytroPalahin/battleship/releases/latest/download/battleship-report-fr.pdf).
 
@@ -21,8 +23,11 @@ cd docs/report && latexmk    # builds both editions into build/
 ```
 
 It needs a TeX Live installation with `latexmk` (the `texlive-full` package on
-Debian and Ubuntu, MacTeX on macOS). The PDFs are not committed: every push rebuilds them in CI
+Debian and Ubuntu, MacTeX on macOS). Every push rebuilds the PDFs in CI
 ([`docs.yml`](../../.github/workflows/docs.yml)) and each release carries them.
+
+The two copies in this folder are not written by that build, which goes to `build/`: after a
+change to the sources, replace them with the new files.
 
 | File                 | Content                                                       |
 | -------------------- | ------------------------------------------------------------- |
